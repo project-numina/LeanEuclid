@@ -1,9 +1,11 @@
 import SystemE.Theory.Sorts
 import SystemE.Theory.Relations
+import SystemE.Meta.Attr
 
 /--
 A combination of the two superposition rules in [Avigad et al., 2009]
 -/
+@[euclid]
 axiom superposition : ∀ (a b c d g h : Point) (AB BC AC L : Line),
   formTriangle a b c AB BC AC ∧ distinctPointsOnLine d g L ∧ ¬(h.onLine L) →
   ∃ (b' c' : Point) (BC' AC' : Line), (∠ b:a:c : ℝ) = (∠ b':d:c') ∧ (∠ a:c:b : ℝ) = (∠ d:c':b') ∧ (∠ c:b:a : ℝ) = (∠ c':b':d) ∧
