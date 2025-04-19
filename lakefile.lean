@@ -20,7 +20,7 @@ lean_lib E3 {
 
 require mathlib from git "https://github.com/leanprover-community/mathlib4.git" @ "9837ca9d65d9de6fad1ef4381750ca688774e608"
 
-require smt from git "https://github.com/ufmg-smite/lean-smt.git" @ "61dde7027e3c0d2db1564bc73c1471e7fd3f6457"
+require smt from git "https://github.com/ufmg-smite/lean-smt.git" @ "9b81e91cc9ea3833203317a7f425267112083672"
 
 def tmpFileDir := "tmp"
 
