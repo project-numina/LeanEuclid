@@ -54,6 +54,16 @@ ______________________________________________________________________
 
 Take the following steps to build the Lean project:
 
+0. Make sure to have the following packages installed:
+
+`clang`
+`libc++-dev`
+`cvc5`
+`libcvc5-dev`
+`unzip`
+
+And run the following `lake run cvc5/downloadRelease`
+
 1. Run `lake script run check` to check if the requirements are satisfied.
 2. Run `lake exe cache get` to download the [mathlib](https://github.com/leanprover-community/mathlib4) cache
 3. Run `lake build` to compile the formal system E
