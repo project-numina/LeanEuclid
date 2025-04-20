@@ -55,7 +55,7 @@ def evalAuto' : Tactic
     let instr ← parseInstr instr
     match instr with
     | .none =>
-      let axioms := (← getEuclidTheorems).toList.dedup.toArray
+      let axioms := (← getEuclidTheorems)
       let (lemmas, inhFacts) ← collectAllLemmas' axioms hints uords (goalBinders.push ngoal)
       let declName? ← Elab.Term.getDeclName?
       let proof ← runAuto declName? lemmas inhFacts
