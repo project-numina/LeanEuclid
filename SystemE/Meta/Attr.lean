@@ -2,13 +2,10 @@ import Lean
 
 open Lean Meta Elab Command Simp
 
--- initialize euclidAttr : TagAttribute ←
---   registerTagAttribute `euclid "Used to mark System E inference axioms"
+initialize euclidExtension : LabelExtension ← registerLabelAttr `euclid "System E inference axiom"
 
-initialize euclidExtension : SimpExtension ← registerSimpAttr `euclid "System E inference axiom"
-
-def getEuclidTheorems : CoreM SimpTheorems :=
-  euclidExtension.getTheorems
+def getEuclidTheorems : CoreM (Array Name) := do
+  pure <| euclidExtension.getState (← getEnv)
 
 /--
 `pwFilter R l` is a maximal sublist of `l` which is `Pairwise R`.
@@ -30,15 +27,6 @@ def List.dedup [DecidableEq α] : List α → List α :=
 
 elab "#euclid_post" : command => do
   liftTermElabM do
-    let simps ← getEuclidTheorems
-    let post := simps.post
-
     IO.println "=== post simp theorems ==="
-    for thm in (post.values.map (·.origin.key)).toList.dedup do
+    for thm in  ← getEuclidTheorems do
       IO.println thm
-
--- elab "#printTagged" : command => do
---   let env ← getEnv
---   let decls := euclidAttr.ext.getState env
---   for decl in decls do
---     logInfo m!"Tagged: {decl}"
