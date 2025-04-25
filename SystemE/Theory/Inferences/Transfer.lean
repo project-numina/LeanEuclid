@@ -1,6 +1,6 @@
 import SystemE.Theory.Sorts
 import SystemE.Theory.Relations
-import SystemE.Meta.EAuto
+import SystemE.Tactic.Attr
 
 
 --

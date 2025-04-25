@@ -1,6 +1,6 @@
 import SystemE.Theory.Sorts
 import SystemE.Theory.Relations
-import SystemE.Meta.Attr
+import SystemE.Tactic.Attr
 
 --
 -- Metric inferences defined in Sec. 3.5 of Avigad et al., 2009
@@ -32,7 +32,7 @@ axiom zero_segment_onlyif : ∀ (a b : Point),
 -- 2.
 -- ab ≥ 0
 --
--- @[simp]
+@[simp]
 axiom segment_gte_zero : ∀ (s : Segment),
   0 ≤ s.length
 
@@ -96,7 +96,7 @@ axiom area_symm_2 : ∀ (a b c : Point),
 -- \cab = \c′a′b′, then △abc = △a′b′c′.
 --
 
--- @[euclid]
+@[euclid]
 axiom area_congruence : ∀ (a b c a' b' c' : Point),
     |(a─b)| = |(a'─b')| ∧
     |(b─c)| = |(b'─c')| ∧

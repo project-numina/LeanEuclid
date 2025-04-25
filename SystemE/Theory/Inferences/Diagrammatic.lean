@@ -1,5 +1,5 @@
 import SystemE.Theory.Relations
-import SystemE.Meta.Attr
+import SystemE.Tactic.Attr
 
 
 -- ********

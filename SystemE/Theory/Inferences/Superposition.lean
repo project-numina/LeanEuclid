@@ -1,6 +1,6 @@
 import SystemE.Theory.Sorts
 import SystemE.Theory.Relations
-import SystemE.Meta.Attr
+import SystemE.Tactic.Attr
 
 /--
 A combination of the two superposition rules in [Avigad et al., 2009]

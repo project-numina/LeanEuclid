@@ -1,0 +1,50 @@
+import SystemE.Tactic.EAuto
+import Lean
+import Batteries
+import SystemE.Tactic.Util
+
+open Lean Meta Elab Tactic SystemE.Tactics
+
+elab "euclid_finish" : tactic => do
+  evalTactic <| ← `(tactic| eauto [*])
+
+/-
+  Main function for `euclid_apply`
+-/
+def EuclidApply (rule : Term) (idents : Array Ident)  : TacticM Unit := do
+  if (← getGoals).length != 1 then
+    throwError "euclid_apply only works when there is a single goal"
+  let hnm ← getUnusedUserName `h
+  let τ ← inferType (← elabTerm rule none) >>= instantiateMVars
+
+  let ⟨e, proof⟩ : Expr × Term := ← (do
+    match τ with
+    | .forallE _ hole P _ =>
+      if P.hasLooseBVars then  --  τ is an ∀
+        return ⟨τ, rule⟩
+      else  -- τ is an implication, rather than ∀
+        dbg_trace rule
+        return ⟨P, ← `(term| $rule (by eauto [*]))⟩
+    | _ => return ⟨τ, rule⟩
+  )
+
+  match e.getAppFnArgs with
+  | (``Exists, _) =>  -- τ is `∃ x, ...`
+    dbg_trace idents
+    evalTactic $ ← `(tactic| obtain ⟨$idents,*, ($(mkIdent hnm))⟩ := $proof)
+  | _ =>
+    evalTactic $ ← `(tactic| obtain $(mkIdent hnm) := $proof)
+
+  elimAllConjunctions
+
+syntax "euclid_apply" term : tactic
+syntax "euclid_apply" term "as" ident : tactic
+syntax "euclid_apply" term "as" "(" ident,+ ")" : tactic
+
+elab_rules : tactic
+  | `(tactic| euclid_apply $t as $i) =>
+    withMainContext $ EuclidApply t #[i]
+  | `(tactic| euclid_apply $t as ($is,*)) =>
+    withMainContext $ EuclidApply t is
+  | `(tactic| euclid_apply $t) =>
+    withMainContext $ EuclidApply t #[]
