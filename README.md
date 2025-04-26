@@ -42,22 +42,25 @@ ______________________________________________________________________
 
 ## Requirements
 
-* A working setup of [Lean 4](https://lean-lang.org/), including [elan](https://github.com/leanprover/elan) and [Lean's VSCode extension](https://lean-lang.org/lean4/doc/quickstart.html)
-* Install the latest version of [Z3](https://github.com/Z3Prover/z3) and [CVC5](https://cvc5.github.io/) and make sure they can be accessed from the command line
-* Install Python dependencies: `pip install smt-portfolio openai`
-* Find out the location of `smt-portfolio` and make sure Lean's VSCode extension can also access it. For example, if `which smt-portfolio` outputs `/Users/yangky/miniconda3/envs/lean/bin/smt-portfolio`, you should set `Server Env Paths` in Lean's VSCode extension as below:
-<img width="938" alt="image" src="https://github.com/loganrjmurphy/LeanEuclid/assets/5431913/abfc6d25-e2e4-462e-934d-a10b4cb4e96c">
+It is recommended that you run this repo on linux (if you are on windows you can use wsl). 
 
-
+You will need to install the following linux packages: 
+```
+clang
+libc++-dev
+cvc5
+libcvc5-dev
+```
 
 ## Building
 
 Take the following steps to build the Lean project:
 
-1. Run `lake script run check` to check if the requirements are satisfied.
-2. Run `lake exe cache get` to download the [mathlib](https://github.com/leanprover-community/mathlib4) cache
-3. Run `lake build` to compile the formal system E
-4. Open a file for Euclid's *Elements* in VS Code, e.g., [Book/Prop01.lean](Book/Prop01.lean). You should expect to see:
+1. Run `lake run cvc5/downloadRelease` to install the latest copy of `cvc5`
+2. Run `lake script run check` to check if the requirements are satisfied.
+3. Run `lake exe cache get` to download the [mathlib](https://github.com/leanprover-community/mathlib4) cache
+4. Run `lake build` to compile the formal system E
+5. Open a file for Euclid's *Elements* in VS Code, e.g., [Book/Prop01.lean](Book/Prop01.lean). You should expect to see:
 
 ![Elements Prop1](https://github.com/loganrjmurphy/LeanEuclid/blob/master/images/Elements_prop1.png)
 
