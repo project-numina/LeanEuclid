@@ -42,22 +42,25 @@ ______________________________________________________________________
 
 ## Requirements
 
-* A working setup of [Lean 4](https://lean-lang.org/), including [elan](https://github.com/leanprover/elan) and [Lean's VSCode extension](https://lean-lang.org/lean4/doc/quickstart.html)
-* Install the latest version of [Z3](https://github.com/Z3Prover/z3) and [CVC5](https://cvc5.github.io/) and make sure they can be accessed from the command line
-* Install Python dependencies: `pip install smt-portfolio openai`
-* Find out the location of `smt-portfolio` and make sure Lean's VSCode extension can also access it. For example, if `which smt-portfolio` outputs `/Users/yangky/miniconda3/envs/lean/bin/smt-portfolio`, you should set `Server Env Paths` in Lean's VSCode extension as below:
-<img width="938" alt="image" src="https://github.com/loganrjmurphy/LeanEuclid/assets/5431913/abfc6d25-e2e4-462e-934d-a10b4cb4e96c">
+It is recommended that you run this repo on linux (if you are on windows you can use wsl). 
 
-
+You will need to install the following linux packages: 
+```
+clang
+libc++-dev
+cvc5
+libcvc5-dev
+```
 
 ## Building
 
 Take the following steps to build the Lean project:
 
-1. Run `lake script run check` to check if the requirements are satisfied.
-2. Run `lake exe cache get` to download the [mathlib](https://github.com/leanprover-community/mathlib4) cache
-3. Run `lake build` to compile the formal system E
-4. Open a file for Euclid's *Elements* in VS Code, e.g., [Book/Prop01.lean](Book/Prop01.lean). You should expect to see:
+1. Run `lake run cvc5/downloadRelease` to install the latest copy of `cvc5`
+2. Run `lake script run check` to check if the requirements are satisfied.
+3. Run `lake exe cache get` to download the [mathlib](https://github.com/leanprover-community/mathlib4) cache
+4. Run `lake build` to compile the formal system E
+5. Open a file for Euclid's *Elements* in VS Code, e.g., [Book/Prop01.lean](Book/Prop01.lean). You should expect to see:
 
 ![Elements Prop1](https://github.com/loganrjmurphy/LeanEuclid/blob/master/images/Elements_prop1.png)
 
@@ -168,5 +171,5 @@ In our paper, we used LeanEuclid to test state-of-the-art LLMs on theorem statem
 
 ## Acknowledgements
 
-* We use ([our own fork](https://github.com/yangky11/lean-smt) of) [lean-smt](https://github.com/ufmg-smite/lean-smt) for running SMT solvers from Lean.
+* Unlike the original LeanEuclid, we use the following commit of [lean-smt](https://github.com/ufmg-smite/lean-smt/commit/9b81e91cc9ea3833203317a7f425267112083672)
 * There are concurrent efforts on formalizing Euclidean geometry in Lean (e.g., [EG](https://github.com/jjdishere/EG) and [Hernandez-Espiet's work](https://github.com/leanprover-community/mathlib4/pull/7300)). To the best of our knowledge, LeanEuclid is unique in its use of external solvers to handle diagrammatic reasoning, which is typically performed explicitly. However, this comes at the expense of [breaking soundness](https://github.com/loganrjmurphy/LeanEuclid/blob/master/SystemE/Meta/Smt/Solver.lean#L44-L47). 
