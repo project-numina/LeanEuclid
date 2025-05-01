@@ -19,12 +19,12 @@ import SystemE.Tactic.Attr
 
 
 
-@[euclid]
+@[euclid, metric]
 axiom zero_segment_if :
   ∀ (a b : Point),  |(a ─ b)| = 0 → a = b
 
 
-@[euclid]
+@[euclid, metric]
 axiom zero_segment_onlyif : ∀ (a b : Point),
   a = b → |(a─b)| = 0
 
@@ -32,7 +32,7 @@ axiom zero_segment_onlyif : ∀ (a b : Point),
 -- 2.
 -- ab ≥ 0
 --
-@[simp]
+@[euclid, metric]
 axiom segment_gte_zero : ∀ (s : Segment),
   0 ≤ s.length
 
@@ -41,13 +41,13 @@ axiom segment_gte_zero : ∀ (s : Segment),
 -- ab = ba.
 --
 -- @[simp]
-@[euclid]
+@[euclid, metric]
 axiom segment_symmetric : ∀ (a b : Point),
   |(a─b)| = |(b─a)|
 --
 
 
-@[euclid]
+@[euclid, metric]
 axiom angle_symm : ∀ (a b c : Point),
   (a ≠ b) ∧ (b ≠ c) → ((∠ a:b:c) = (∠ c:b:a))
 
@@ -56,7 +56,7 @@ axiom angle_symm : ∀ (a b c : Point),
 -- 0 ≤ \abc and \abc ≤ right-angle + right-angle.
 -- --
 -- @[simp]
-@[euclid]
+@[euclid, metric]
 axiom angle_range : ∀ (ang : Angle),
   (0 : ℝ) ≤ ang ∧ ang ≤ ∟ + ∟
 
@@ -65,7 +65,7 @@ axiom angle_range : ∀ (ang : Angle),
 -- △aab = 0. △
 --
 -- @[simp]
-@[euclid]
+@[euclid, metric]
 axiom degenerated_area : ∀ (a b : Point), Triangle.area △ a:a:b = 0
 
 --
@@ -73,7 +73,7 @@ axiom degenerated_area : ∀ (a b : Point), Triangle.area △ a:a:b = 0
 -- △abc ≥ 0.
 -- --
 -- @[simp]
-@[euclid]
+@[euclid, metric]
 axiom area_gte_zero : ∀ (ar : Triangle), 0 ≤ Triangle.area ar
 
 --
@@ -81,12 +81,12 @@ axiom area_gte_zero : ∀ (ar : Triangle), 0 ≤ Triangle.area ar
 -- △abc = △cab and △abc = △acb.
 --
 -- @[simp]
-@[euclid]
+@[euclid, metric]
 axiom area_symm_1 : ∀ (a b c : Point),
     Triangle.area (△a:b:c) = Triangle.area (△c:a:b)
 
 -- @[simp]
-@[euclid]
+@[euclid, metric]
 axiom area_symm_2 : ∀ (a b c : Point),
     Triangle.area (△ a:b:c) = Triangle.area (△a:c:b)
 
@@ -96,7 +96,7 @@ axiom area_symm_2 : ∀ (a b c : Point),
 -- \cab = \c′a′b′, then △abc = △a′b′c′.
 --
 
-@[euclid]
+@[euclid, metric]
 axiom area_congruence : ∀ (a b c a' b' c' : Point),
     |(a─b)| = |(a'─b')| ∧
     |(b─c)| = |(b'─c')| ∧

@@ -1,13 +1,9 @@
 import SystemE
 import Smt
-import Smt.Auto
+import Smt.Real
+import SystemE.Tactic.ESmt
 
 set_option maxHeartbeats 1000000
-#check angle_symm
-
-set_option auto.native true
-
-attribute [rebind Auto.Native.solverFunc] Smt.smtSolverFunc
 
 namespace Elements.Book1
 
@@ -16,14 +12,13 @@ theorem proposition_1 : ∀ (a b : Point) (AB : Line),
   ∃ c : Point, |(c─a)| = |(a─b)| ∧ |(c─b)| = |(a─b)| :=
 by
   euclid_intros
-  obtain ⟨BCD, h1⟩ := circle_from_points a b (by auto)
-  obtain ⟨ACE, h2⟩ := circle_from_points b a (by auto)
-  obtain ⟨c, hc⟩ := intersection_circles BCD ACE (by
-    eauto [h1, h2])
-  have hBCD := point_on_circle_onlyif a b c BCD (by eauto [h1, h2, hc])
-  have hACE := point_on_circle_onlyif b a c ACE (by eauto [h1, h2, hc])
+  obtain ⟨BCD, h1⟩ := circle_from_points a b (by esmt)
+  obtain ⟨ACE, h2⟩ := circle_from_points b a (by esmt)
+  obtain ⟨c, hc⟩ := intersection_circles BCD ACE (by esmt)
+  have hBCD := point_on_circle_onlyif a b c BCD (by esmt)
+  have hACE := point_on_circle_onlyif b a c ACE (by esmt [h1, h2, hc])
   use c
-  euclid_finish --eauto [h1, h2, hc, hBCD, hACE]
+  esmt [h1, h2, hc, hBCD, hACE]
 
 
 theorem proposition_1' : ∀ (a b x : Point) (AB : Line),

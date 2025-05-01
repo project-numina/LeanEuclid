@@ -8,7 +8,7 @@ open Lean Elab Tactic Meta Simp
 
 namespace Auto
 
-syntax (name := eauto) "eauto" autoinstr hints (uord)* : tactic
+syntax (name := eauto) "eauto" ident autoinstr hints (uord)* : tactic
 
 #check InputHints
 def collectAllLemmas'
@@ -37,7 +37,7 @@ def collectAllLemmas'
 
 @[tactic eauto]
 def evalEAuto : Tactic
-| `(eauto | eauto $instr $hints $[$uords]*) => withMainContext do
+| `(eauto | eauto $attr $instr $hints $[$uords]*) => withMainContext do
   -- Suppose the goal is `∀ (x₁ x₂ ⋯ xₙ), G`
   -- First, apply `intros` to put `x₁ x₂ ⋯ xₙ` into the local context,
   --   now the goal is just `G`
@@ -50,7 +50,15 @@ def evalEAuto : Tactic
     let instr ← parseInstr instr
     match instr with
     | .none =>
-      let axioms := (← getEuclidTheorems)
+      let ext :=
+        match attr.getId with
+        | `euclid => euclidExtension
+        | `diag => diagExtension
+        | `metric => metricExtension
+        | `super => superExtension
+        | `transfer => transferExtension
+        | _ => euclidExtension
+      let axioms := ext.getState (← getEnv)
       let mut inputHints ← parseHints hints
       for x in axioms do
         inputHints := { inputHints with terms := inputHints.terms.push (mkIdent x)}
