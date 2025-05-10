@@ -48,3 +48,8 @@ elab_rules : tactic
     withMainContext $ EuclidApply t is
   | `(tactic| euclid_apply $t) =>
     withMainContext $ EuclidApply t #[]
+
+syntax "euclid_assert" term : tactic
+
+macro_rules
+  | `(tactic| euclid_assert $t) => `(tactic| have : $t := by euclid_finish)
