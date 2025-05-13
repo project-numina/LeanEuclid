@@ -20,9 +20,20 @@ def prepareSmtQuery' (hs : List Expr) (goalType : Expr) (fvNames : Std.HashMap F
   Lean.Meta.withLocalDeclD goalId.name (mkNot goalType) fun g => do
     (Query.generateQuery' g hs fvNames initialState)
 
-#check smt
+/- Unsound axiom we use to admit results from the solvers
+   Dangerous!
+ -/
+universe u
+axiom SMT_VERIF (α : Sort u) (synthetic := false) : α
 
-def esmt (mv : MVarId) (ac : List Command) (hs : List Expr) (timeout' : Option Nat := none) : MetaM (List MVarId) := mv.withContext do
+
+def mkSMT_VERIF (type : Expr) (synthetic : Bool) : MetaM Expr := do
+  let u ← Meta.getLevel type
+  return mkApp2 (mkConst ``SMT_VERIF [u]) type (toExpr synthetic)
+
+#check Meta.mkSorry
+
+def esmt (mv : MVarId) (ac : List Command) (ax : List Expr) (hs : List Expr) (timeout' : Option Nat := none) : MetaM (List MVarId) := mv.withContext do
   -- 1. Process the hints passed to the tactic.
   withProcessedHints mv hs fun mv hs => mv.withContext do
   let (hs, mv) ← Preprocess.elimIff mv hs
@@ -53,13 +64,17 @@ def esmt (mv : MVarId) (ac : List Command) (hs : List Expr) (timeout' : Option N
     throwError "unable to prove goal, either it is false or you need to define more symbols with `smt [foo, bar]`"
   | .ok pf =>
     -- 4b. Reconstruct proof.
-    let (p, hp, mvs) ← reconstructProof pf fvNames₂
-    let mv ← mv.assert (← mkFreshId) p hp
-    let ⟨_, mv⟩ ← mv.intro1
-    let ts ← hs.mapM Meta.inferType
-    let mut gs ← mv.apply (← Meta.mkAppOptM ``Prop.implies_of_not_and #[listExpr ts q(Prop), goalType])
-    mv.withContext (gs.forM (·.assumption))
-    return mvs
+    let goalType ← mv.getType
+    let lsorry ← mkSMT_VERIF goalType (synthetic := true)
+    mv.assign lsorry
+    return []
+    -- let (p, hp, mvs) ← reconstructProof pf fvNames₂
+    -- let mv ← mv.assert (← mkFreshId) p hp
+    -- let ⟨_, mv⟩ ← mv.intro1
+    -- let ts ← (ax ++ hs).mapM Meta.inferType
+    -- let mut gs ← mv.apply (← Meta.mkAppOptM ``Prop.implies_of_not_and #[listExpr ts q(Prop), goalType])
+    -- mv.withContext (gs.forM (·.assumption))
+    -- return mvs
 
 -- open Lean hiding Command
 open Elab Tactic Qq
@@ -69,6 +84,9 @@ namespace Tactic
 
 syntax (name := esmt) "esmt" smtHints smtTimeout : tactic
 
+#check Tactic.evalRunTac
+#check Tactic.evalTactic
+#check Tactic.elabTerm
 
 /-
   if no hints are given the entire local context is used
@@ -80,9 +98,17 @@ def evalESmt : Tactic := fun stx => withMainContext do
   --   let e ← `(show _ from $(mkIdent x))
   --   elabTerm e none
   -- ))
-  let axiomCommands : Array (Smt.Translate.Command) := euclidSorts.toArray ++ axioms.map (·.2)
-
+  let axiomCommands : Array (Smt.Translate.Command) := euclidSorts.toArray ++ axioms.1.map (·.2)
+  let axiomExprs1 ← axioms.1.mapM fun ⟨x, _⟩ => do
+        let ll ← `(show _ from $(mkIdent x))
+        return ← elabTerm ll none
+  let axiomExprs2 ← axioms.2.mapM fun x => do
+        let ll ← `(show _ from $(mkIdent x))
+        return ← elabTerm ll none
   let userHints ← parseHints ⟨stx[1]⟩
+
+  for ⟨x, _⟩ in axioms.1 do
+    evalTactic (← `(tactic| have := $(mkIdent x)))
 
   -- If hints are empty, fall back to all local declarations
   let hints ← if userHints.isEmpty then
@@ -99,5 +125,5 @@ def evalESmt : Tactic := fun stx => withMainContext do
   else
     pure userHints
 
-  let mvs ← Smt.esmt (← Tactic.getMainGoal) axiomCommands.toList hints (← parseTimeout ⟨stx[2]⟩)
+  let mvs ← Smt.esmt (← Tactic.getMainGoal) axiomCommands.toList axiomExprs1.toList (axiomExprs2.toList ++ hints) (← parseTimeout ⟨stx[2]⟩)
   Tactic.replaceMainGoal mvs

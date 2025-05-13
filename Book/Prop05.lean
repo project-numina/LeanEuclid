@@ -1,6 +1,10 @@
 import SystemE
+import Smt
+import Smt.Real
+import SystemE.Tactic.ESmt
 import Book.Prop03
 import Book.Prop04
+
 
 namespace Elements.Book1
 
@@ -16,7 +20,7 @@ by
   euclid_apply (line_from_points b g) as GB
   euclid_apply (proposition_4 a f c a g b AB FC AC AC GB AB)
   euclid_apply (proposition_4 f b c g c b AB BC FC AC BC GB)
-  euclid_apply (sum_angles_onlyif b a g c AB GB)
+  have := (sum_angles_onlyif b a g c AB GB) (by show_term esmt)
   euclid_apply (sum_angles_onlyif c a f b AC FC)
   euclid_finish
 

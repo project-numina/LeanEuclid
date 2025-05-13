@@ -1,7 +1,10 @@
 import SystemE
-import Book.Prop03
-import Book.Prop04
+import Smt
+import Smt.Real
+import SystemE.Tactic.ESmt
+import Book.Prop05
 
+set_option maxHeartbeats 0
 namespace Elements.Book1
 
 theorem proposition_6 : ∀ (a b c : Point) (AB BC AC : Line),

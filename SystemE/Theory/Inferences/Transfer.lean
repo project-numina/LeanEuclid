@@ -164,7 +164,7 @@ axiom equal_angles : ∀ (a b b' c c' : Point) (L M : Line),
 --
 --
 -- -- Given lines a,b,c and d such that a and b are both on a given line L, b and c are both on a given line M, c and d are both on a given line N, b is distinct from c, a and d are on the same side of M, and the sum of angles abc and bcd is less than the sum of two right angles, then there is a point e such that e is on L and N and e is on the same side of M as a.
--- not an actual inference lemma (including it will greatly slow down smt speed)
+@[euclid]
 axiom lines_intersect : ∀ (a b c d : Point) (L M N : Line),
   (a.onLine L) ∧ (b.onLine L) ∧ (b.onLine M) ∧ (c.onLine M) ∧ (c.onLine N) ∧ (d.onLine N) ∧
   (b ≠ c) ∧ (a.sameSide d M) ∧ (∠ a:b:c) + (∠ b:c:d) < ∟ + ∟ →

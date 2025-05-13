@@ -1,9 +1,8 @@
 import SystemE
-import Smt
 import Smt.Real
-import SystemE.Tactic.ESmt
 
-set_option maxHeartbeats 1000000
+
+-- set_option trace.smt true
 
 namespace Elements.Book1
 
@@ -33,5 +32,6 @@ by
   euclid_apply point_on_circle_onlyif b a c ACE
   use c
   euclid_finish
+
 
 end Elements.Book1

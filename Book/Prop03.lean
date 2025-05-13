@@ -1,5 +1,10 @@
 import SystemE
+import Smt
+import Smt.Real
+import SystemE.Tactic.ESmt
 import Book.Prop02
+
+-- set_option maxHeartbeats 2000000
 
 namespace Elements.Book1
 

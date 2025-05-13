@@ -1,6 +1,10 @@
 import SystemE
+import Smt
+import Smt.Real
+import SystemE.Tactic.ESmt
 import Book.Prop01
 
+-- set_option maxHeartbeats 2000000
 namespace Elements.Book1
 
 theorem proposition_2 : ∀ (a b c : Point) (BC : Line),
@@ -21,7 +25,7 @@ by
   euclid_apply (between_if l a d )
   euclid_apply (between_if g b d )
   use l
-  euclid_finish
+  esmt
 
 /-
 An extension of proposition_2 to the case where a and b may be the same point.

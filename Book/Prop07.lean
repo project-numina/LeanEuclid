@@ -1,6 +1,8 @@
 import SystemE
 import Book.Prop05
 
+set_option maxHeartbeats 0
+
 namespace Elements.Book1
 
 theorem proposition_7 : ∀ (a b c d : Point) (AB AC CB AD DB : Line),
