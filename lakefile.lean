@@ -3,6 +3,7 @@ open Lake DSL
 
 package «lib» where
   leanOptions := #[⟨`relaxedAutoImplicit, true⟩]
+  supportInterpreter := true
 
 @[default_target]
 lean_lib SystemE {
