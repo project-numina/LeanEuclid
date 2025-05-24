@@ -24,12 +24,6 @@ def prepareSmtQuery' (hs : List Expr) (goalType : Expr) (fvNames : Std.HashMap F
    Dangerous!
  -/
 universe u
-axiom SMT_VERIF (α : Sort u) (synthetic := false) : α
-
-
-def mkSMT_VERIF (type : Expr) (synthetic : Bool) : MetaM Expr := do
-  let u ← Meta.getLevel type
-  return mkApp2 (mkConst ``SMT_VERIF [u]) type (toExpr synthetic)
 
 #check Meta.mkSorry
 
@@ -64,17 +58,13 @@ def esmt (mv : MVarId) (ac : List Command) (ax : List Expr) (hs : List Expr) (ti
     throwError "unable to prove goal, either it is false or you need to define more symbols with `smt [foo, bar]`"
   | .ok pf =>
     -- 4b. Reconstruct proof.
-    let goalType ← mv.getType
-    let lsorry ← mkSMT_VERIF goalType (synthetic := true)
-    mv.assign lsorry
-    return []
-    -- let (p, hp, mvs) ← reconstructProof pf fvNames₂
-    -- let mv ← mv.assert (← mkFreshId) p hp
-    -- let ⟨_, mv⟩ ← mv.intro1
-    -- let ts ← (ax ++ hs).mapM Meta.inferType
-    -- let mut gs ← mv.apply (← Meta.mkAppOptM ``Prop.implies_of_not_and #[listExpr ts q(Prop), goalType])
-    -- mv.withContext (gs.forM (·.assumption))
-    -- return mvs
+    let (p, hp, mvs) ← reconstructProof pf fvNames₂
+    let mv ← mv.assert (← mkFreshId) p hp
+    let ⟨_, mv⟩ ← mv.intro1
+    let ts ← (ax ++ hs).mapM Meta.inferType
+    let mut gs ← mv.apply (← Meta.mkAppOptM ``Prop.implies_of_not_and #[listExpr ts q(Prop), goalType])
+    mv.withContext (gs.forM (·.assumption))
+    return mvs
 
 -- open Lean hiding Command
 open Elab Tactic Qq
