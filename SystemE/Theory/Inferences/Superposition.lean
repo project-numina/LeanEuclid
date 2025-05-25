@@ -1,6 +1,9 @@
 import SystemE.Theory.Sorts
 import SystemE.Theory.Relations
 import SystemE.Tactic.Attr
+-- chaining imports is necessary for euclid attribute to work properly
+import SystemE.Theory.Inferences.Metric
+
 
 /--
 A combination of the two superposition rules in [Avigad et al., 2009]

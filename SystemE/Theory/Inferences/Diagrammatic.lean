@@ -16,6 +16,8 @@ If points `a` and `b` are distinct, and both points are on lines `L` and `M`, th
 axiom two_points_determine_line :
   ∀ (a b : Point) (L M : Line), distinctPointsOnLine a b L ∧ (a.onLine M) ∧ (b.onLine M) → L = M
 
+#euclid_post
+
 /--
 If points `a` and `b` are both centers of `(α : Circle)` then `a = b`
 -/
@@ -318,7 +320,7 @@ axiom parallel_line_unique : ∀ (a : Point) (L M N : Line),
 
 @[euclid, diag]
 axiom intersection_symm :
-  ∀ (L M : Line), L.intersectsLine M → L.intersectsLine L
+  ∀ (L M : Line), L.intersectsLine M → M.intersectsLine L
 
 -- ********
 -- 2
@@ -364,3 +366,5 @@ axiom intersection_circle_circle_2: ∀ (a b : Point) (α β : Circle),
 axiom parallelogram_same_side : ∀ (a b c d : Point) (AB CD AC BD : Line),
   formParallelogram a b c d AB CD AC BD →
   b.sameSide d AC ∧ c.sameSide d AB ∧ a.sameSide b CD
+
+#euclid_post

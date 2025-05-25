@@ -1,7 +1,8 @@
 import SystemE.Theory.Sorts
 import SystemE.Theory.Relations
 import SystemE.Tactic.Attr
-
+-- chaining imports is necessary for euclid attribute to work properly
+import SystemE.Theory.Inferences.Superposition
 
 --
 -- Transfer inferences defined in Sec. 3.6 of Avigad et al. 2009
@@ -229,3 +230,6 @@ Not in [Avigad et al., 2009] but required by Proposition 47
 axiom rectangle_area : ∀ (a b c d : Point) (AB CD AC BD : Line),
   formParallelogram a b c d AB CD AC BD ∧ (∠ a:c:d = ∟) →
   (Triangle.area △ a:c:d + Triangle.area △ a:b:d = |(a─b)| * |(a─c)|) ∧ (Triangle.area △ b:a:c + Triangle.area △ b:d:c) = |(a─b)| * |(a─c)|
+
+
+#euclid_post

@@ -30,10 +30,9 @@ def EuclidApply (rule : Term) (idents : Array Ident)  : TacticM Unit := do
 
   match e.getAppFnArgs with
   | (``Exists, _) =>  -- τ is `∃ x, ...`
-    dbg_trace idents
-    evalTactic $ ← `(tactic| have ⟨$idents,*, ($(mkIdent hnm))⟩ := $proof)
+    evalTactic $ ← `(tactic| obtain ⟨$idents,*, hnm⟩ := $proof)
   | _ =>
-    evalTactic $ ← `(tactic| have $(mkIdent hnm) := $proof)
+    evalTactic $ ← `(tactic| obtain $(mkIdent hnm) := $proof)
 
   elimAllConjunctions
 
