@@ -64,10 +64,11 @@ def esmt (mv : MVarId) (ac : List Command) (ax : List Expr) (hs : List Expr) (ti
     throwError "unable to prove goal, either it is false or you need to define more symbols with `smt [foo, bar]`"
   | .ok pf =>
     -- 4b. Reconstruct proof.
+    let (p, hp, mvs) ← reconstructProof pf fvNames₂
     let goalType ← mv.getType
     let lsorry ← mkSMT_VERIF goalType (synthetic := true)
     mv.assign lsorry
-    return []
+    return mvs
     -- let (p, hp, mvs) ← reconstructProof pf fvNames₂
     -- let mv ← mv.assert (← mkFreshId) p hp
     -- let ⟨_, mv⟩ ← mv.intro1
