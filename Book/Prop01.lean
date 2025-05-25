@@ -2,19 +2,22 @@ import SystemE
 import Smt.Real
 
 
--- set_option trace.smt true
+set_option trace.smt true
 
 namespace Elements.Book1
+
+-- theorem test (a b : ℝ) (ha1 : a = 2) (hb : b = 4) : a = 2 := by
+--   esmt [ha1, hb]
 
 theorem proposition_1 : ∀ (a b : Point) (AB : Line),
   distinctPointsOnLine a b AB →
   ∃ c : Point, |(c─a)| = |(a─b)| ∧ |(c─b)| = |(a─b)| :=
 by
   euclid_intros
-  obtain ⟨BCD, h1⟩ := circle_from_points a b (by esmt)
-  obtain ⟨ACE, h2⟩ := circle_from_points b a (by esmt)
-  obtain ⟨c, hc⟩ := intersection_circles BCD ACE (by esmt)
-  have hBCD := point_on_circle_onlyif a b c BCD (by esmt)
+  obtain ⟨BCD, h1⟩ := circle_from_points a b (by esmt [*])
+  obtain ⟨ACE, h2⟩ := circle_from_points b a (by esmt [*])
+  obtain ⟨c, hc⟩ := intersection_circles BCD ACE (by esmt [*])
+  have hBCD := point_on_circle_onlyif a b c BCD (by esmt [*])
   have hACE := point_on_circle_onlyif b a c ACE (by esmt [h1, h2, hc])
   use c
   esmt [h1, h2, hc, hBCD, hACE]

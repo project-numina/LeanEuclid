@@ -27,16 +27,18 @@ universe u
 
 #check Meta.mkSorry
 
-def esmt (mv : MVarId) (ac : List Command) (ax : List Expr) (hs : List Expr) (timeout' : Option Nat := none) : MetaM (List MVarId) := mv.withContext do
+
+def esmt (mv : MVarId) (ac : List Command) (hs : List Expr) (timeout' : Option Nat := none) : MetaM (List MVarId) := mv.withContext do
+  let mv₁ := (← Meta.mkFreshExprMVar (← mv.getType)).mvarId!
   -- 1. Process the hints passed to the tactic.
-  withProcessedHints mv hs fun mv hs => mv.withContext do
-  let (hs, mv) ← Preprocess.elimIff mv hs
-  mv.withContext do
-  let goalType : Q(Prop) ← mv.getType
+  withProcessedHints mv₁ hs fun mv₂ hs => mv₂.withContext do
+  -- let (hs, mv₂) ← Preprocess.elimIff mv₂ hs
+  mv₂.withContext do
+  let goalType : Q(Prop) ← mv₂.getType
   -- 2. Generate the SMT query.
   let (fvNames₁, fvNames₂) ← genUniqueFVarNames
   -- let (st, _) ← prepareSmtQuery' as (← mv.getType) fvNames₁
-  let cmds ← prepareSmtQuery hs (← mv.getType) fvNames₁
+  let cmds ← prepareSmtQuery hs (← mv₂.getType) fvNames₁
   let cmds := .setLogic "ALL" :: ac ++ cmds
   trace[smt] "goal: {goalType}"
   trace[smt] "\nquery:\n{Command.cmdsAsQuery (cmds ++ [.checkSat])}"
@@ -58,12 +60,13 @@ def esmt (mv : MVarId) (ac : List Command) (ax : List Expr) (hs : List Expr) (ti
     throwError "unable to prove goal, either it is false or you need to define more symbols with `smt [foo, bar]`"
   | .ok pf =>
     -- 4b. Reconstruct proof.
-    let (p, hp, mvs) ← reconstructProof pf fvNames₂
-    let mv ← mv.assert (← mkFreshId) p hp
-    let ⟨_, mv⟩ ← mv.intro1
-    let ts ← (ax ++ hs).mapM Meta.inferType
-    let mut gs ← mv.apply (← Meta.mkAppOptM ``Prop.implies_of_not_and #[listExpr ts q(Prop), goalType])
-    mv.withContext (gs.forM (·.assumption))
+    let ctx := { userNames := fvNames₂ }
+    let (_, ps, p, hp, mvs) ← reconstructProof pf ctx
+    let mv₂ ← mv₂.assert (← mkFreshId) p hp
+    let ⟨_, mv₂⟩ ← mv₂.intro1
+    let mut gs ← mv₂.apply (← Meta.mkAppOptM ``Prop.implies_of_not_and #[listExpr ps.dropLast q(Prop), goalType])
+    mv₂.withContext (gs.forM (·.assumption))
+    mv.assign (.mvar mv₁)
     return mvs
 
 -- open Lean hiding Command
@@ -72,7 +75,7 @@ open Smt Translate Query Reconstruct Util
 
 namespace Tactic
 
-syntax (name := esmt) "esmt" smtHints smtTimeout : tactic
+syntax (name := esmt) "esmt" smtHints : tactic
 
 #check Tactic.evalRunTac
 #check Tactic.evalTactic
@@ -83,37 +86,21 @@ syntax (name := esmt) "esmt" smtHints smtTimeout : tactic
 -/
 @[tactic esmt]
 def evalESmt : Tactic := fun stx => withMainContext do
+  evalTactic (← `(tactic | dsimp at *))
+
   let axioms := euclidExtension.getState (← getEnv)
   -- let axiomExprs : List Expr := (← axioms.toList.mapM (fun x => do
   --   let e ← `(show _ from $(mkIdent x))
   --   elabTerm e none
   -- ))
-  let axiomCommands : Array (Smt.Translate.Command) := euclidSorts.toArray ++ axioms.1.map (·.2)
-  let axiomExprs1 ← axioms.1.mapM fun ⟨x, _⟩ => do
-        let ll ← `(show _ from $(mkIdent x))
+  let axiomCommands : Array (Smt.Translate.Command) := euclidSorts.toArray ++ axioms.1.map (·.2.2)
+  let axiomExprs2 ← axioms.2.mapM fun ⟨x, e⟩ => do
+        let ll ← `(show $(← Expr.toSyntax e) from $(mkIdent x))
         return ← elabTerm ll none
-  let axiomExprs2 ← axioms.2.mapM fun x => do
-        let ll ← `(show _ from $(mkIdent x))
-        return ← elabTerm ll none
-  let userHints ← parseHints ⟨stx[1]⟩
+  let userHints ← elabHints ⟨stx[1]⟩
 
-  for ⟨x, _⟩ in axioms.1 do
-    evalTactic (← `(tactic| have := $(mkIdent x)))
+  for ⟨x, e, _⟩ in axioms.1 do
+    evalTactic (← `(tactic| have : $(← Expr.toSyntax e) := $(mkIdent x)))
 
-  -- If hints are empty, fall back to all local declarations
-  let hints ← if userHints.isEmpty then
-    let lctx ← getLCtx
-    lctx.foldlM (init := []) fun acc decl =>
-      if decl.isImplementationDetail || decl.isAuxDecl then
-        pure acc
-      else do
-        let type ← instantiateMVars decl.type
-        if ← Meta.isProp type then
-          pure (acc.concat <| ← instantiateMVars decl.toExpr)
-        else
-          pure acc
-  else
-    pure userHints
-
-  let mvs ← Smt.esmt (← Tactic.getMainGoal) axiomCommands.toList axiomExprs1.toList (axiomExprs2.toList ++ hints) (← parseTimeout ⟨stx[2]⟩)
+  let mvs ← Smt.esmt (← Tactic.getMainGoal) axiomCommands.toList (axiomExprs2.toList ++ userHints) none
   Tactic.replaceMainGoal mvs

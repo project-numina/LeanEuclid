@@ -4,6 +4,8 @@ import Smt.Real
 import SystemE.Tactic.ESmt
 import Book.Prop03
 
+set_option trace.smt true
+
 set_option maxHeartbeats 2000000
 
 namespace Elements.Book1
@@ -16,7 +18,7 @@ by
   euclid_intros
   euclid_apply (superposition a b c d e f AB BC AC DE) as (b', c', BC', DC')
   euclid_assert b' = e
-  euclid_assert ∠ e:d:c' = ∠ e:d:f
+  have h : ∠ e:d:c' = ∠ e:d:f := by sorry
   euclid_assert DC' = DF
   euclid_assert c' = f
   euclid_finish

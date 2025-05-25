@@ -25,7 +25,7 @@ by
   euclid_apply (between_if l a d )
   euclid_apply (between_if g b d )
   use l
-  esmt
+  esmt [*]
 
 /-
 An extension of proposition_2 to the case where a and b may be the same point.

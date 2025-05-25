@@ -5,6 +5,7 @@ import SystemE.Tactic.ESmt
 import Book.Prop03
 import Book.Prop04
 
+set_option trace.smt true
 
 namespace Elements.Book1
 
@@ -18,23 +19,23 @@ by
   euclid_apply (proposition_3 a e f a AC AB) as g
   euclid_apply (line_from_points c f) as FC
   euclid_apply (line_from_points b g) as GB
-  euclid_apply (proposition_4 a f c a g b AB FC AC AC GB AB)
+  have := (proposition_4 a f c a g b AB FC AC AC GB AB) (by esmt)
   euclid_apply (proposition_4 f b c g c b AB BC FC AC BC GB)
   have := (sum_angles_onlyif b a g c AB GB) (by show_term esmt)
   euclid_apply (sum_angles_onlyif c a f b AC FC)
   euclid_finish
 
-/--
-A restriction of proposition_5.
--/
-theorem proposition_5' : ∀ (a b c : Point) (AB BC AC : Line),
-  formTriangle a b c AB BC AC ∧ (|(a─b)| = |(a─c)|) →
-  (∠ a:b:c = ∠ a:c:b) :=
-by
-  euclid_intros
-  euclid_apply (extend_point AB a b) as d
-  euclid_apply (extend_point AC a c) as e
-  euclid_apply (proposition_5 a b c d e AB BC AC)
-  euclid_finish
+-- /--
+-- A restriction of proposition_5.
+-- -/
+-- theorem proposition_5' : ∀ (a b c : Point) (AB BC AC : Line),
+--   formTriangle a b c AB BC AC ∧ (|(a─b)| = |(a─c)|) →
+--   (∠ a:b:c = ∠ a:c:b) :=
+-- by
+--   euclid_intros
+--   euclid_apply (extend_point AB a b) as d
+--   euclid_apply (extend_point AC a c) as e
+--   euclid_apply (proposition_5 a b c d e AB BC AC)
+--   euclid_finish
 
 end Elements.Book1

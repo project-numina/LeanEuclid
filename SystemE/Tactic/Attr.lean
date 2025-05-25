@@ -11,7 +11,7 @@ initialize metricExtension : LabelExtension ← registerLabelAttr `metric "Syste
 initialize superExtension : LabelExtension ← registerLabelAttr `super "System E superposition inference axiom"
 initialize transferExtension : LabelExtension ← registerLabelAttr `transfer "System E transfer inference axiom"
 
-abbrev EuclidExtension := SimpleScopedEnvExtension (Name × Option (Smt.Translate.Command)) (Array (Name × Smt.Translate.Command) × Array Name)
+abbrev EuclidExtension := SimpleScopedEnvExtension (Name × Expr × Option (Smt.Translate.Command)) (Array (Name × Expr × Smt.Translate.Command) × Array (Name × Expr))
 
 instance : Inhabited Smt.Translate.Command :=
   ⟨Smt.Translate.Command.exit⟩
@@ -23,6 +23,12 @@ instance : Inhabited Smt.Translate.Command :=
 #check IO.processCommands
 #check registerSimpAttr
 
+def dsimpExpr (e : Expr) : MetaM Expr := do
+  let simpThms ← Meta.getSimpTheorems
+  let congrThms ← Meta.getSimpCongrTheorems
+  let ctx ← Meta.Simp.mkContext {} #[simpThms] congrThms
+  let result ← Meta.dsimp e ctx
+  return result.1
 
 def registerEuclidAttr (attrName : Name) (attrDescr : String)
   (ref : Name := by exact decl_name%) : IO EuclidExtension := do
@@ -30,9 +36,9 @@ def registerEuclidAttr (attrName : Name) (attrDescr : String)
     name     := ref
     initial  := ⟨#[], #[]⟩
     addEntry := fun d e =>
-      match e.2 with
-      | some x => {d with fst := d.fst.push ⟨e.1, x⟩}
-      | none => {d with snd := d.snd.push e.1}
+      match e.2.2 with
+      | some x => {d with fst := d.fst.push ⟨e.1, e.2.1, x⟩}
+      | none => {d with snd := d.snd.push ⟨e.1, e.2.1⟩}
   }
   registerBuiltinAttribute {
     ref   := ref
@@ -42,14 +48,15 @@ def registerEuclidAttr (attrName : Name) (attrDescr : String)
     add   := fun declName stx attrKind => do
       let go : MetaM Unit := do
         let info ← getConstInfo declName
-        let reducedType ← reduce info.type
+        -- let tmp ← Smt.Preprocess.replaceIff info.type
+        let reducedType ← dsimpExpr info.type
         let (declCmd, _) ← (Smt.Translator.applyTranslators? reducedType).run {}
-        ext.add <| ⟨declName, declCmd.map Smt.Translate.Command.assert⟩
+        ext.add <| ⟨declName, reducedType, declCmd.map Smt.Translate.Command.assert⟩
       discard <| go.run {} {}
     erase := fun declName => do
       let s := ext.getState (← getEnv)
       modifyEnv fun env => ext.modifyState env fun _ =>
-        ⟨s.fst.filter (declName = ·.1), s.snd.filter (declName = ·)⟩
+        ⟨s.1.filter (declName = ·.1), s.2.filter (declName = ·.1)⟩
   }
   return ext
 
