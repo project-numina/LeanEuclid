@@ -1,6 +1,7 @@
 import SystemE.Theory.Sorts
 import SystemE.Theory.Relations
 import SystemE.Tactic.Attr
+import SystemE.Theory.Inferences.Diagrammatic
 
 --
 -- Metric inferences defined in Sec. 3.5 of Avigad et al., 2009

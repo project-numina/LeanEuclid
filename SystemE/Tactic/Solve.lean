@@ -6,7 +6,7 @@ import SystemE.Tactic.Util
 open Lean Meta Elab Tactic SystemE.Tactics
 
 elab "euclid_finish" : tactic => do
-  evalTactic <| ← `(tactic| esmt [*])
+  evalTactic <| ← `(tactic| try split_ands; all_goals esmt [*])
 
 /-
   Main function for `euclid_apply`
@@ -24,7 +24,7 @@ def EuclidApply (rule : Term) (idents : Array Ident)  : TacticM Unit := do
         return ⟨τ, rule⟩
       else  -- τ is an implication, rather than ∀
         dbg_trace rule
-        return ⟨P, ← `(term| $rule (by esmt [*]))⟩
+        return ⟨P, ← `(term| $rule (by euclid_finish))⟩
     | _ => return ⟨τ, rule⟩
   )
 

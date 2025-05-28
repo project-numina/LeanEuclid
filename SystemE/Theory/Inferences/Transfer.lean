@@ -1,6 +1,7 @@
 import SystemE.Theory.Sorts
 import SystemE.Theory.Relations
 import SystemE.Tactic.Attr
+import SystemE.Theory.Inferences.Superposition
 
 
 --

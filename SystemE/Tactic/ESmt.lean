@@ -14,21 +14,30 @@ open Elab Tactic Qq
 open Smt Translate Query Reconstruct Util
 
 
+#check prepareSmtQuery
 
-def prepareSmtQuery' (hs : List Expr) (goalType : Expr) (fvNames : Std.HashMap FVarId String) (initialState : QueryBuilderM.State := { : QueryBuilderM.State }) : MetaM (QueryBuilderM.State × List Command) := do
+def prepareSmtQuery' (oldExprs : List Expr) (initialState : QueryBuilderM.State := { : QueryBuilderM.State }) (hs : List Expr) (goalType : Expr) (fvNames : Std.HashMap FVarId String) : MetaM (List Command) := do
   let goalId ← Lean.mkFreshMVarId
   Lean.Meta.withLocalDeclD goalId.name (mkNot goalType) fun g => do
-    (Query.generateQuery' g hs fvNames initialState)
+    Query.generateQuery' oldExprs initialState g hs fvNames
 
 /- Unsound axiom we use to admit results from the solvers
    Dangerous!
  -/
 universe u
 
+axiom SMT_VERIF (α : Sort u) (synthetic := false) : α
+
+
+def mkSMT_VERIF (type : Expr) (synthetic : Bool) : MetaM Expr := do
+  let u ← Meta.getLevel type
+  return mkApp2 (mkConst ``SMT_VERIF [u]) type (toExpr synthetic)
+
+
 #check Meta.mkSorry
 
 
-def esmt (mv : MVarId) (ac : List Command) (hs : List Expr) (timeout' : Option Nat := none) : MetaM (List MVarId) := mv.withContext do
+def esmt (oldExprs : List Expr) (st : QueryBuilderM.State) (mv : MVarId) (ac : List Command) (hs : List Expr) (timeout' : Option Nat := none) : MetaM (List MVarId) := mv.withContext do
   let mv₁ := (← Meta.mkFreshExprMVar (← mv.getType)).mvarId!
   -- 1. Process the hints passed to the tactic.
   withProcessedHints mv₁ hs fun mv₂ hs => mv₂.withContext do
@@ -38,8 +47,8 @@ def esmt (mv : MVarId) (ac : List Command) (hs : List Expr) (timeout' : Option N
   -- 2. Generate the SMT query.
   let (fvNames₁, fvNames₂) ← genUniqueFVarNames
   -- let (st, _) ← prepareSmtQuery' as (← mv.getType) fvNames₁
-  let cmds ← prepareSmtQuery hs (← mv₂.getType) fvNames₁
-  let cmds := .setLogic "ALL" :: ac ++ cmds
+  let cmds ← prepareSmtQuery' oldExprs st hs (← mv₂.getType) fvNames₁
+  let cmds := .setLogic "ALL" :: cmds
   trace[smt] "goal: {goalType}"
   trace[smt] "\nquery:\n{Command.cmdsAsQuery (cmds ++ [.checkSat])}"
   -- parse the commands
@@ -48,7 +57,7 @@ def esmt (mv : MVarId) (ac : List Command) (hs : List Expr) (timeout' : Option N
   let time2 ← IO.monoMsNow
   dbg_trace f!"parsing time: {time2 - time1}"
   -- 3. Run the solver.
-  let res ← solve query timeout'
+  let res ← solve query (some 1)
   let time3 ← IO.monoMsNow
   dbg_trace f!"solving time: {time3 - time2}"
   -- 4. Print the result.
@@ -60,14 +69,18 @@ def esmt (mv : MVarId) (ac : List Command) (hs : List Expr) (timeout' : Option N
     throwError "unable to prove goal, either it is false or you need to define more symbols with `smt [foo, bar]`"
   | .ok pf =>
     -- 4b. Reconstruct proof.
-    let ctx := { userNames := fvNames₂ }
-    let (_, ps, p, hp, mvs) ← reconstructProof pf ctx
-    let mv₂ ← mv₂.assert (← mkFreshId) p hp
-    let ⟨_, mv₂⟩ ← mv₂.intro1
-    let mut gs ← mv₂.apply (← Meta.mkAppOptM ``Prop.implies_of_not_and #[listExpr ps.dropLast q(Prop), goalType])
-    mv₂.withContext (gs.forM (·.assumption))
-    mv.assign (.mvar mv₁)
-    return mvs
+    let goalType ← mv.getType
+    let lsorry ← mkSMT_VERIF goalType (synthetic := true)
+    mv.assign lsorry
+    return []
+    -- let ctx := { userNames := fvNames₂ }
+    -- let (_, ps, p, hp, mvs) ← reconstructProof pf ctx
+    -- let mv₂ ← mv₂.assert (← mkFreshId) p hp
+    -- let ⟨_, mv₂⟩ ← mv₂.intro1
+    -- let mut gs ← mv₂.apply (← Meta.mkAppOptM ``Prop.implies_of_not_and #[listExpr ps.dropLast q(Prop), goalType])
+    -- mv₂.withContext (gs.forM (·.assumption))
+    -- mv.assign (.mvar mv₁)
+    -- return mvs
 
 -- open Lean hiding Command
 open Elab Tactic Qq
@@ -86,21 +99,12 @@ syntax (name := esmt) "esmt" smtHints : tactic
 -/
 @[tactic esmt]
 def evalESmt : Tactic := fun stx => withMainContext do
-  evalTactic (← `(tactic | dsimp at *))
+  -- evalTactic (← `(tactic | dsimp at *))
+
+  let ⟨st, oldGoals, cmds⟩ := euclidExtension.getState (← getEnv)
 
   let axioms := euclidExtension.getState (← getEnv)
-  -- let axiomExprs : List Expr := (← axioms.toList.mapM (fun x => do
-  --   let e ← `(show _ from $(mkIdent x))
-  --   elabTerm e none
-  -- ))
-  let axiomCommands : Array (Smt.Translate.Command) := euclidSorts.toArray ++ axioms.1.map (·.2.2)
-  let axiomExprs2 ← axioms.2.mapM fun ⟨x, e⟩ => do
-        let ll ← `(show $(← Expr.toSyntax e) from $(mkIdent x))
-        return ← elabTerm ll none
   let userHints ← elabHints ⟨stx[1]⟩
 
-  for ⟨x, e, _⟩ in axioms.1 do
-    evalTactic (← `(tactic| have : $(← Expr.toSyntax e) := $(mkIdent x)))
-
-  let mvs ← Smt.esmt (← Tactic.getMainGoal) axiomCommands.toList (axiomExprs2.toList ++ userHints) none
+  let mvs ← Smt.esmt oldGoals st (← Tactic.getMainGoal) [] (userHints) none
   Tactic.replaceMainGoal mvs

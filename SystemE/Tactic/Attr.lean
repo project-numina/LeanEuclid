@@ -2,16 +2,20 @@ import Lean
 import Smt.Translate
 import Smt.Real
 import Smt.Translate.Commands
+import SystemE.Tactic.EQuery
+-- import SystemE.Tactic.Translate
 import Smt
 
 open Lean Meta Elab Command
+
+open Smt.Translate.Query
 
 initialize diagExtension : LabelExtension ← registerLabelAttr `diag "System E diagrammatic inference axiom"
 initialize metricExtension : LabelExtension ← registerLabelAttr `metric "System E metric inference axiom"
 initialize superExtension : LabelExtension ← registerLabelAttr `super "System E superposition inference axiom"
 initialize transferExtension : LabelExtension ← registerLabelAttr `transfer "System E transfer inference axiom"
 
-abbrev EuclidExtension := SimpleScopedEnvExtension (Name × Expr × Option (Smt.Translate.Command)) (Array (Name × Expr × Smt.Translate.Command) × Array (Name × Expr))
+abbrev EuclidExtension := SimpleScopedEnvExtension (QueryBuilderM.State × List Expr × List Smt.Translate.Command) (QueryBuilderM.State × List Expr × List Smt.Translate.Command)
 
 instance : Inhabited Smt.Translate.Command :=
   ⟨Smt.Translate.Command.exit⟩
@@ -23,22 +27,47 @@ instance : Inhabited Smt.Translate.Command :=
 #check IO.processCommands
 #check registerSimpAttr
 
-def dsimpExpr (e : Expr) : MetaM Expr := do
-  let simpThms ← Meta.getSimpTheorems
-  let congrThms ← Meta.getSimpCongrTheorems
-  let ctx ← Meta.Simp.mkContext {} #[simpThms] congrThms
-  let result ← Meta.dsimp e ctx
-  return result.1
+instance : Inhabited QueryBuilderM.State :=
+  ⟨{ : QueryBuilderM.State }⟩
+
+def Smt.Term.beq : Smt.Term → Smt.Term → Bool
+| .literalT s₁, .literalT s₂ => s₁ == s₂
+| .symbolT s₁, .symbolT s₂ => s₁ == s₂
+| .arrowT a₁ b₁, .arrowT a₂ b₂ => beq a₁ a₂ && beq b₁ b₂
+| .appT f₁ x₁, .appT f₂ x₂ => beq f₁ f₂ && beq x₁ x₂
+| .forallT n₁ t₁ b₁, .forallT n₂ t₂ b₂ => n₁ == n₂ && beq t₁ t₂ && beq b₁ b₂
+| .existsT n₁ t₁ b₁, .existsT n₂ t₂ b₂ => n₁ == n₂ && beq t₁ t₂ && beq b₁ b₂
+| .letT n₁ v₁ b₁, .letT n₂ v₂ b₂ => n₁ == n₂ && beq v₁ v₂ && beq b₁ b₂
+| _, _ => false
+
+instance : BEq Smt.Term :=
+  ⟨Smt.Term.beq⟩
+
+
+instance : BEq Smt.Translate.Command where
+  beq
+    | .setLogic l₁, .setLogic l₂ => l₁ == l₂
+    | .setOption k₁ v₁, .setOption k₂ v₂ => k₁ == k₂ && v₁ == v₂
+    | .declareSort nm₁ ar₁, .declareSort nm₂ ar₂ => nm₁ == nm₂ && ar₁ == ar₂
+    | .defineSort nm₁ ps₁ tm₁, .defineSort nm₂ ps₂ tm₂ => nm₁ == nm₂ && ps₁ == ps₂ && tm₁ == tm₂
+    | .declare nm₁ st₁, .declare nm₂ st₂ => nm₁ == nm₂ && st₁ == st₂
+    | .defineFun nm₁ ps₁ cod₁ tm₁ rec₁, .defineFun nm₂ ps₂ cod₂ tm₂ rec₂ =>
+        nm₁ == nm₂ && ps₁ == ps₂ && cod₁ == cod₂ && tm₁ == tm₂ && rec₁ == rec₂
+    | .assert tm₁, .assert tm₂ => tm₁ == tm₂
+    | .checkSat, .checkSat => true
+    | .getModel, .getModel => true
+    | .getProof, .getProof => true
+    | .exit, .exit => true
+    | _, _ => false
+
+
 
 def registerEuclidAttr (attrName : Name) (attrDescr : String)
   (ref : Name := by exact decl_name%) : IO EuclidExtension := do
   let ext : EuclidExtension ← registerSimpleScopedEnvExtension {
     name     := ref
-    initial  := ⟨#[], #[]⟩
-    addEntry := fun d e =>
-      match e.2.2 with
-      | some x => {d with fst := d.fst.push ⟨e.1, e.2.1, x⟩}
-      | none => {d with snd := d.snd.push ⟨e.1, e.2.1⟩}
+    initial  := ⟨{ : QueryBuilderM.State }, [], []⟩
+    addEntry := fun d e => e
   }
   registerBuiltinAttribute {
     ref   := ref
@@ -47,16 +76,13 @@ def registerEuclidAttr (attrName : Name) (attrDescr : String)
     applicationTime := AttributeApplicationTime.afterCompilation
     add   := fun declName stx attrKind => do
       let go : MetaM Unit := do
-        let info ← getConstInfo declName
-        -- let tmp ← Smt.Preprocess.replaceIff info.type
-        let reducedType ← dsimpExpr info.type
-        let (declCmd, _) ← (Smt.Translator.applyTranslators? reducedType).run {}
-        ext.add <| ⟨declName, reducedType, declCmd.map Smt.Translate.Command.assert⟩
+        -- let info ← getConstInfo declName
+        -- let reducedType ← reduce info.type
+        let ⟨oldSt, oldExprs, _⟩ := (ext.getState (← getEnv))
+        ext.add <| ← addCommandForConstant oldExprs declName oldSt
       discard <| go.run {} {}
     erase := fun declName => do
-      let s := ext.getState (← getEnv)
-      modifyEnv fun env => ext.modifyState env fun _ =>
-        ⟨s.1.filter (declName = ·.1), s.2.filter (declName = ·.1)⟩
+      pure ()
   }
   return ext
 
@@ -65,8 +91,8 @@ initialize euclidExtension : EuclidExtension ← registerEuclidAttr `euclid "euc
 -- def getEuclidTheorems : CoreM (Array Smt.Translate.Command × ) := do
 --   pure <| (euclidExtension.getState (← getEnv)).map (·.2)
 
--- elab "#euclid_post" : command => do
---   liftTermElabM do
---     IO.println "=== post simp theorems ==="
---     for thm in  ← getEuclidTheorems do
---       IO.println thm
+elab "#euclid_post" : command => do
+  liftTermElabM do
+    let ⟨st, oldExprs, cmds⟩ := euclidExtension.getState (← getEnv)
+    IO.println cmds.reverse.length
+    IO.println oldExprs.length
