@@ -46,7 +46,7 @@ def generateQuery' (oldGoalExprs : List Expr) (goal : Expr) (hs : List Expr) (fv
     trace[smt.translate.query] "Provided Hints: {hs}"
     let ((_, st), _) ← do
       QueryBuilderM.buildDependencyGraph goal
-      |>.run { toDefine := oldGoalExprs ++ hs : QueryBuilderM.Config }
+      |>.run { toDefine := hs : QueryBuilderM.Config }
       |>.run initialState
       |>.run { uniqueFVarNames := fvNames : TranslationM.State }
     trace[smt.translate.query] "Dependency Graph: {st.graph}"

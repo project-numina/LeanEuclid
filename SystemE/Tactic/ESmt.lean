@@ -14,7 +14,6 @@ open Elab Tactic Qq
 open Smt Translate Query Reconstruct Util
 
 
-
 #check Lean.Meta.withLocalDeclsD
 def prepareSmtQuery' (oldGoalExprs : List Expr) (hs : List Expr) (goalType : Expr) (fvNames : Std.HashMap FVarId String) (initialState : QueryBuilderM.State := { : QueryBuilderM.State }) : MetaM (List Command) := do
   let goalId ← Lean.mkFreshMVarId
@@ -34,49 +33,44 @@ def mkSMT_VERIF (type : Expr) (synthetic : Bool) : MetaM Expr := do
 
 #check Meta.mkSorry
 
+
+
+
 def esmt (oldGoalExprs : List Expr) (mv : MVarId) (ac : List Command) (st : QueryBuilderM.State) (hs : List Expr) (timeout' : Option Nat := none) : MetaM (List MVarId) := mv.withContext do
   -- 1. Process the hints passed to the tactic.
-  withProcessedHints mv hs fun mv hs => mv.withContext do
-  let (hs, mv) ← Preprocess.elimIff mv hs
-  mv.withContext do
-  let goalType : Q(Prop) ← mv.getType
+    withProcessedHints mv hs fun mv hs => mv.withContext do
+    let (hs, mv) ← Preprocess.elimIff mv hs
+    mv.withContext do
+    let goalType : Q(Prop) ← mv.getType
   -- 2. Generate the SMT query.
-  let (fvNames₁, fvNames₂) ← genUniqueFVarNames
+    let (fvNames₁, fvNames₂) ← genUniqueFVarNames
   -- let (st, _) ← prepareSmtQuery' as (← mv.getType) fvNames₁
-  let cmds ← prepareSmtQuery' oldGoalExprs hs (← mv.getType) fvNames₁ st
-  let cmds := .setLogic "ALL" :: cmds
-  trace[smt] "goal: {goalType}"
-  trace[smt] "num commands {cmds.length}"
-  trace[smt] "\nquery:\n{Command.cmdsAsQuery (cmds ++ [.checkSat])}"
+    let cmds ← prepareSmtQuery' oldGoalExprs hs (← mv.getType) fvNames₁ st
+    let cmds := .setLogic "ALL" :: cmds
+    trace[smt] "goal: {goalType}"
+    trace[smt] "num commands {cmds.length}"
+    trace[smt] "\nquery:\n{Command.cmdsAsQuery (cmds ++ [.checkSat])}"
   -- parse the commands
-  let time1 ← IO.monoMsNow
-  let query := Command.cmdsAsQuery cmds
-  let time2 ← IO.monoMsNow
-  dbg_trace f!"parsing time: {time2 - time1}"
+    let time1 ← IO.monoMsNow
+    let query := Command.cmdsAsQuery cmds
+    let time2 ← IO.monoMsNow
+    dbg_trace f!"parsing time: {time2 - time1}"
   -- 3. Run the solver.
-  let res ← solve query timeout'
-  let time3 ← IO.monoMsNow
-  dbg_trace f!"solving time: {time3 - time2}"
+    let res ← solve query (some 1)
+    let time3 ← IO.monoMsNow
+    dbg_trace f!"solving time: {time3 - time2}"
   -- 4. Print the result.
   -- trace[smt] "\nresult: {res}"
-  match res with
-  | .error e =>
+    match res with
+    | .error e =>
     -- 4a. Print error reason.
     trace[smt] "\nerror reason:\n{repr e}\n"
-    throwError "unable to prove goal, either it is false or you need to define more symbols with `smt [foo, bar]`"
-  | .ok pf =>
-    -- 4b. Reconstruct proof.
-    -- let goalType ← mv.getType
-    -- let lsorry ← mkSMT_VERIF goalType (synthetic := true)
-    -- mv.assign lsorry
-    -- return []
-    let (p, hp, mvs) ← reconstructProof pf fvNames₂
-    let mv ← mv.assert (← mkFreshId) p hp
-    let ⟨_, mv⟩ ← mv.intro1
-    let ts ← (oldGoalExprs ++ hs).mapM Meta.inferType
-    let mut gs ← mv.apply (← Meta.mkAppOptM ``Prop.implies_of_not_and #[listExpr ts q(Prop), goalType])
-    mv.withContext (gs.forM (·.assumption))
-    return mvs
+      throwError "unable to prove goal, either it is false or you need to define more symbols with `smt [foo, bar]`"
+    | .ok pf =>
+      let goalType ← mv.getType
+      let lsorry ← mkSMT_VERIF goalType (synthetic := true)
+      mv.assign lsorry
+      return []
 
 -- open Lean hiding Command
 open Elab Tactic Qq
@@ -113,9 +107,9 @@ def evalESmt : Tactic := fun stx => withMainContext do
   else
     pure userHints
 
-  for goalExpr in oldGoals do
-    let goalStx ← Term.exprToSyntax goalExpr
-    evalTactic <| ← `(tactic| have := $goalStx)
+  -- for goalExpr in oldGoals do
+  --   let goalStx ← Term.exprToSyntax goalExpr
+  --   evalTactic <| ← `(tactic| have := $goalStx)
 
   let mvs ← Smt.esmt oldGoals (← Tactic.getMainGoal) cmds st (hints) (← parseTimeout ⟨stx[2]⟩)
   Tactic.replaceMainGoal mvs

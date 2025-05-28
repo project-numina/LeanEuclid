@@ -6,7 +6,7 @@ import SystemE.Tactic.Util
 open Lean Meta Elab Tactic SystemE.Tactics
 
 elab "euclid_finish" : tactic => do
-  evalTactic <| ← `(tactic| esmt)
+  evalTactic (← `(tactic| try split_ands; all_goals esmt))
 
 /-
   Main function for `euclid_apply`
@@ -51,4 +51,4 @@ elab_rules : tactic
 syntax "euclid_assert" term : tactic
 
 macro_rules
-  | `(tactic| euclid_assert $t) => `(tactic| have : $t := by euclid_finish)
+  | `(tactic| euclid_assert $t) => `(tactic| have : $t := by esmt)
