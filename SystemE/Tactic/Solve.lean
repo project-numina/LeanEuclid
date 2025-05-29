@@ -6,7 +6,7 @@ import SystemE.Tactic.Util
 open Lean Meta Elab Tactic SystemE.Tactics
 
 elab "euclid_finish" : tactic => do
-  evalTactic (← `(tactic| try split_ands; all_goals esmt))
+  evalTactic (← `(tactic| try simp_all; try split_ands; all_goals esmt))
 
 /-
   Main function for `euclid_apply`
@@ -27,6 +27,7 @@ def EuclidApply (rule : Term) (idents : Array Ident)  : TacticM Unit := do
         return ⟨P, ← `(term| $rule (by esmt))⟩
     | _ => return ⟨τ, rule⟩
   )
+  elimAllConjunctions
 
   match e.getAppFnArgs with
   | (``Exists, _) =>  -- τ is `∃ x, ...`
