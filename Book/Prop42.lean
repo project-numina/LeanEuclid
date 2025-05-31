@@ -12,7 +12,7 @@ theorem proposition_42 : ∀ (a b c d₁ d₂ d₃ : Point) (AB BC AC D₁₂ D�
   formTriangle a b c AB BC AC ∧ formRectilinearAngle d₁ d₂ d₃ D₁₂ D₂₃ ∧
   (∠ d₁:d₂:d₃ : ℝ) > 0 ∧ (∠ d₁:d₂:d₃ : ℝ) < ∟ + ∟ →
   ∃ (f g e c' : Point) (FG EC EF CG : Line), formParallelogram f g e c' FG EC EF CG ∧
-  (∠ c':e:f = ∠ d₁:d₂:d₃) ∧ (△ f:e:c' + △ f:c':g = △ a:b:c) :=
+  (∠ c':e:f = ∠ d₁:d₂:d₃) ∧ ((△ f:e:c' : ℝ) + △ f:c':g = △ a:b:c) :=
 by
   euclid_intros
   euclid_apply (proposition_10 b c BC) as e

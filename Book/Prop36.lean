@@ -5,10 +5,11 @@ import Book.Prop35
 
 namespace Elements.Book1
 
+set_option maxHeartbeats 0 in
 theorem proposition_36 : ∀ (a b c d e f g h : Point) (AH BG AB CD EF HG : Line),
   formParallelogram a d b c AH BG AB CD ∧ formParallelogram e h f g AH BG EF HG ∧
   |(b─c)| = |(f─g)| ∧ (between a d h) ∧ (between a e h) →
-  △ a:b:d + △ d:b:c = △ e:f:h + △ h:f:g :=
+  (△ a:b:d : ℝ) + △ d:b:c = △ e:f:h + △ h:f:g :=
 by
   euclid_intros
   euclid_apply (line_from_points b e) as BE
@@ -23,7 +24,7 @@ by
 theorem proposition_36' : ∀ (a b c d e f g h : Point) (AH BG AB CD EF HG : Line) ,
   formParallelogram a d b c AH BG AB CD ∧ formParallelogram e h f g AH BG EF HG ∧
   |(b─c)| = |(f─g)| →
-  △ a:b:d + △ d:b:c = △ e:f:h + △ h:f:g :=
+  (△ a:b:d : ℝ) + △ d:b:c = △ e:f:h + △ h:f:g :=
 by
   euclid_intros
   euclid_apply (line_from_points b e) as BE

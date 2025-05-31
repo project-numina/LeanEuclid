@@ -179,27 +179,27 @@ axiom lines_intersect : ∀ (a b c d : Point) (L M N : Line),
 -- If a and b are two distinct points both lying on a given line L, with a given a point c such that the area of the triangle abc is zero, then c must also be on L.
 @[euclid, transfer]
 axiom degenerated_area_if : ∀ (a b c : Point) (L : Line),
-  distinctPointsOnLine a b L ∧ (△ a:b:c) = 0 →
+  distinctPointsOnLine a b L ∧ (area' a b c) = 0 →
   c.onLine L
 
 -- If a and b are two distinct points both lying on a given line L, with a given a point c also lying on L, then the area of the triangle abc is zero
 @[euclid, transfer]
 axiom degenerated_area_onlyif : ∀ (a b c : Point) (L : Line),
   distinctPointsOnLine a b L ∧ (c.onLine L) →
-  (△ a:b:c) = 0
+  area' a b c = 0
 
 
 -- If a, b, c are all on a given line point L and distinct from one another, and d is not on L, and  c is  between a and b, then the sum of the areas of triangles acd and dcb is equal to the area of triangle adb
 @[euclid, transfer]
 axiom sum_areas_if : ∀ (a b c d : Point) (L : Line),
   (a.onLine L) ∧ (b.onLine L) ∧ (c.onLine L) ∧ (a ≠ b) ∧ (a ≠ c) ∧ (b ≠ c) ∧ ¬(d.onLine L) ∧ (between a c b) →
-  (△ a:c:d + △ d:c:b = △ a:d:b)
+  (area' a c d + area' d c b = area' a d b)
 
 -- If a, b, c are all on a given line point L and distinct from one another, and d is not on L, and the sum of the areas of triangles acd and dcb is equal to the area of triangle adb, then c is between a and b.
 @[euclid, transfer]
 axiom sum_areas_onlyif : ∀ (a b c d : Point) (L : Line),
   (a.onLine L) ∧ (b.onLine L) ∧ (c.onLine L) ∧ (a ≠ b) ∧ (a ≠ c) ∧ (b ≠ c) ∧ ¬(d.onLine L) ∧
-  (△ a:c:d + △ d:c:b = △ a:d:b) →
+  (area' a c d + area' d c b = area' a d b) →
   between a c b
 
 --    parallelogram rules
@@ -210,7 +210,7 @@ Not in [Avigad et al., 2009]
 -- Given a parallelogram formed from points a, b, c and d, the sum of the areas of the triangles acd and adb is equal to the sum of the areas of triangles bac and bcd
 @[euclid, transfer]
 axiom parallelogram_area : ∀ (a b c d : Point) (AB CD AC BD : Line), formParallelogram a b c d AB CD AC BD →
-  △ a:c:d + △ a:d:b = △ b:a:c + △ b:c:d
+  area' a c d + area' a d b = area' b a c + area' b c d
 
 -- /--
 -- Not in [Avigad et al., 2009]
@@ -220,7 +220,7 @@ axiom parallelogram_area : ∀ (a b c d : Point) (AB CD AC BD : Line), formParal
 @[euclid, transfer]
 axiom sum_parallelograms_area : ∀ (a b c d e f : Point) (AB CD AC BD : Line),
   formParallelogram a b c d AB CD AC BD ∧ between a e b ∧ between c f d →
-  △ a:c:f + △ a:f:e + (△ e:f:d) + (△ e:d:b) = (△ a:c:d) + (△ a:d:b)
+  area' a c f + area' a f e + (area' e f d) + (area' e d b) = (area' a c d) + (area' a d b)
 
 
 /--
@@ -229,7 +229,7 @@ Not in [Avigad et al., 2009] but required by Proposition 47
 @[transfer]
 axiom rectangle_area : ∀ (a b c d : Point) (AB CD AC BD : Line),
   formParallelogram a b c d AB CD AC BD ∧ (∠ a:c:d = ∟) →
-  (△ a:c:d + △ a:b:d = |(a─b)| * |(a─c)|) ∧ (△ b:a:c + △ b:d:c) = |(a─b)| * |(a─c)|
+  (area' a c d + area' a b d = |(a─b)| * |(a─c)|) ∧ (area' b a c + area' b d c) = |(a─b)| * |(a─c)|
 
 
 #euclid_post

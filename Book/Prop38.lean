@@ -9,7 +9,7 @@ namespace Elements.Book1
 theorem proposition_38 : ∀ (a b c d e f: Point) (AD BF AB AC DE DF : Line),
   a.onLine AD ∧ d.onLine AD ∧ formTriangle a b c AB BF AC ∧ formTriangle d e f DE BF DF ∧
   ¬(AD.intersectsLine BF) ∧ (between b c f) ∧ (between b e f) ∧ |(b─c)| = |(e─f)| →
-  △ a:b:c = △ d:e:f :=
+  (△ a:b:c : ℝ) = △ d:e:f :=
 by
   euclid_intros
   euclid_apply (proposition_31 b a c AC) as BG

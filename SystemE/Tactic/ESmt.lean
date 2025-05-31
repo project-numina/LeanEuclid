@@ -40,7 +40,7 @@ def solve' (query : String) (timeout' : Option Nat) : IO (Except Error cvc5.Proo
     if let some t := timeout' then
       Solver.setOption "tlimit" (toString (1000 * t))
     -- Solver.setOption "dag-thresh" "0"
-    -- Solver.setOption "simplification" "none"
+    Solver.setOption "simplification" "none"
     Solver.setOption "enum-inst" "true"
     Solver.setOption "cegqi-midpoint" "true"
     -- Solver.setOption "produce-models" "true"
@@ -78,9 +78,6 @@ def esmt (oldGoalExprs : List Expr) (mv : MVarId) (ac : List Command) (st : Quer
     let (fvNames₁, fvNames₂) ← genUniqueFVarNames
   -- let (st, _) ← prepareSmtQuery' as (← mv.getType) fvNames₁
     let cmds ← prepareSmtQuery' oldGoalExprs hs (← mv.getType) fvNames₁ st
-    for cmd in ac do
-      if ! cmds.contains cmd then
-        dbg_trace "womp womp"
     -- let cmds ← prepareSmtQuery (oldGoalExprs ++ hs) (← mv.getType) fvNames₁
     -- let shortCmds ← prepareSmtQuery hs (← mv.getType) fvNames₁
     let cmds := .setLogic "ALL" :: cmds

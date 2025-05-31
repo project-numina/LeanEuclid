@@ -6,7 +6,20 @@ import SystemE.Tactic.Util
 open Lean Meta Elab Tactic SystemE.Tactics
 
 elab "euclid_finish" : tactic => do
-  evalTactic (← `(tactic| try simp_all; try split_ands; all_goals esmt))
+  -- Try simp_all safely
+  try
+    evalTactic (← `(tactic| simp_all))
+  catch _ =>
+    pure ()
+
+  -- Try split_ands safely
+  try
+    evalTactic (← `(tactic| split_ands))
+  catch _ =>
+    pure ()
+
+  -- Always run esmt on all goals
+  evalTactic (← `(tactic| all_goals esmt))
 
 /-
   Main function for `euclid_apply`
@@ -24,7 +37,7 @@ def EuclidApply (rule : Term) (idents : Array Ident)  : TacticM Unit := do
         return ⟨τ, rule⟩
       else  -- τ is an implication, rather than ∀
         dbg_trace rule
-        return ⟨P, ← `(term| $rule (by esmt))⟩
+        return ⟨P, ← `(term| $rule (by dsimp at *; esmt))⟩
     | _ => return ⟨τ, rule⟩
   )
   elimAllConjunctions
@@ -52,4 +65,4 @@ elab_rules : tactic
 syntax "euclid_assert" term : tactic
 
 macro_rules
-  | `(tactic| euclid_assert $t) => `(tactic| have : $t := by esmt)
+  | `(tactic| euclid_assert $t) => `(tactic| have : $t := by euclid_finish)

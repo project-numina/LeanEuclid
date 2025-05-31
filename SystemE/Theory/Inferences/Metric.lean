@@ -69,7 +69,7 @@ axiom angle_range : ∀ (a b c : Point), a ≠ b ∧ b ≠ c → 0 ≤ ∠ a:b:c
 --
 -- @[simp]
 @[euclid, metric]
-axiom degenerated_area : ∀ (a b : Point), △ a:a:b = 0
+axiom degenerated_area : ∀ (a b : Point), area' a a b = 0
 
 --
 -- 7.
@@ -77,7 +77,7 @@ axiom degenerated_area : ∀ (a b : Point), △ a:a:b = 0
 -- --
 -- @[simp]
 @[euclid, metric]
-axiom area_gte_zero : ∀ a b c : Point, 0 ≤ △ a:b:c
+axiom area_gte_zero : ∀ a b c : Point, 0 ≤ area' a b c
 
 --
 -- 8.
@@ -86,12 +86,12 @@ axiom area_gte_zero : ∀ a b c : Point, 0 ≤ △ a:b:c
 -- @[simp]
 @[euclid, metric]
 axiom area_symm_1 : ∀ (a b c : Point),
-    △a:b:c = △c:a:b
+    area' a b c = area' c a b
 
 -- @[simp]
 @[euclid, metric]
 axiom area_symm_2 : ∀ (a b c : Point),
-    △ a:b:c = △a:c:b
+    area' a b c = area' a c b
 
 --
 -- 9.
@@ -107,4 +107,6 @@ axiom area_congruence : ∀ (a b c a' b' c' : Point),
     ∠ a:b:c = ∠ a':b':c' ∧
     ∠ b:c:a = ∠ b':c':a' ∧
     ∠ c:a:b = ∠ c':a':b'
-    → △ a:b:c = △ a':b':c'
+    → area' a b c = area' a' b' c'
+
+#euclid_post

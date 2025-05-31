@@ -69,7 +69,7 @@ by
   euclid_assert ((∠ d:b:a : ℝ) = ∠ f:b:c)
   euclid_assert ((∠ c:b:a : ℝ) + ∟ = ∠ c:b:f)
   euclid_apply (proposition_4 b d a b c f BD AD AB BC FC BF)
-  euclid_assert ((△ a:b:d) = △ b:c:f)
+  euclid_assert ((△ a:b:d : ℝ) = △ b:c:f)
   euclid_apply (proposition_41 l' b d l a AL BD BC DE AB AD)
   euclid_apply (proposition_41 g f b a c AG BF FG AB FC BC)
   euclid_assert ((△ g:f:b : ℝ) + (△ g:b:a) = (△ l':b:d) + (△ l':d:l))

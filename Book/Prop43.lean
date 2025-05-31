@@ -1,13 +1,12 @@
 import SystemE
 import Book.Prop34
 
-
 namespace Elements.Book1
 
 theorem proposition_43 : ∀ (a b c d e f g h k : Point) (AD BC AB CD AC EF GH : Line),
   formParallelogram a d b c AD BC AB CD ∧ distinctPointsOnLine a c AC ∧ k.onLine AC ∧
   between a h d ∧ formParallelogram a h e k AD EF AB GH ∧ formParallelogram k f g c EF BC GH CD →
-  (△ e:b:g + △ e:g:k = △ h:k:f + △ h:f:d) :=
+  ((△ e:b:g : ℝ) + △ e:g:k = △ h:k:f + △ h:f:d) :=
 by
   euclid_intros
   euclid_apply (proposition_34 d a c b AD BC CD AB AC)
