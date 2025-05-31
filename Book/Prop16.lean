@@ -15,7 +15,7 @@ by
   · -- Omitted by Euclid.
     euclid_apply (proposition_10 b c BC) as e
     euclid_apply (line_from_points a e) as AE
-    euclid_apply (extend_point_longer AE a e (a─e)) as f'
+    euclid_apply (extend_point_longer AE a e a e) as f'
     euclid_apply (proposition_3 e f' a e AE AE) as f
     euclid_apply (line_from_points f c) as FC
     euclid_apply (proposition_15 b c a f e BC AE)
@@ -25,7 +25,7 @@ by
     euclid_finish
   · euclid_apply (proposition_10 a c AC) as e
     euclid_apply (line_from_points b e) as BE
-    euclid_apply (extend_point_longer BE b e (b─e)) as f'
+    euclid_apply (extend_point_longer BE b e b e) as f'
     euclid_apply (proposition_3 e f' b e BE BE) as f
     euclid_apply (line_from_points f c) as FC
     euclid_apply (proposition_15 a c b f e AC BE)

@@ -18,7 +18,7 @@ theorem proposition_1 : ∀ (a b : Point) (AB : Line),
   ∃ c : Point, |(c─a)| = |(a─b)| ∧ |(c─b)| = |(a─b)| :=
 by
   euclid_intros
-  obtain ⟨BCD, h1⟩ := circle_from_points a b (by esmt)
+  obtain ⟨BCD, h1⟩ := circle_from_points a b (by esmt (timeout := 100))
   obtain ⟨ACE, h2⟩ := circle_from_points b a (by esmt)
   -- euclid_apply proposition_1
   obtain ⟨c, hc⟩ := intersection_circles BCD ACE (by esmt)

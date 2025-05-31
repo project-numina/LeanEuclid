@@ -16,11 +16,15 @@ open Term
 def addCommandForConstant (oldGoalExprs : List Expr) (cName : Name) (initialState : QueryBuilderM.State) : MetaM (QueryBuilderM.State × List Expr × List Command) := do
   let constInfo ← getConstInfo cName
   let constExpr := mkConst cName (constInfo.levelParams.map Level.param)
-  let ((_, st), _) ← do
+  let ((_, st), r) ← do
     QueryBuilderM.buildDependencyGraph (mkConst `True)
     |>.run { toDefine := oldGoalExprs ++ [constExpr] : QueryBuilderM.Config }
     |>.run initialState
     |>.run { uniqueFVarNames := {} : TranslationM.State }
+  dbg_trace r.depConstants.toList
+  dbg_trace r.localFVars.toList.length
+  dbg_trace r.depFVars.toList.length
+  dbg_trace r.scopedNames.toList
   let (_, cmds) ← StateT.run (st.graph.orderedDfs (oldGoalExprs ++ [constExpr]) (emitVertex st.commands)) []
   return ⟨st, oldGoalExprs ++ [constExpr], cmds⟩
 

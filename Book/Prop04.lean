@@ -4,6 +4,7 @@ import Smt.Real
 import SystemE.Tactic.ESmt
 import Book.Prop03
 
+set_option trace.smt true
 set_option maxHeartbeats 2000000
 
 namespace Elements.Book1

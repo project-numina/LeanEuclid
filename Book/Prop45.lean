@@ -7,6 +7,7 @@ import Book.Prop34
 import Book.Prop42
 import Book.Prop44
 
+set_option maxHeartbeats 0
 
 namespace Elements.Book1
 
@@ -14,7 +15,7 @@ theorem proposition_45 : ∀ (a b c d e₁ e₂ e₃ : Point) (AB BC CD AD DB E�
   formTriangle a b d AB DB AD ∧ formTriangle b c d BC CD DB ∧ a.opposingSides c DB ∧
   formRectilinearAngle e₁ e₂ e₃ E₁₂ E₂₃ ∧ ∠ e₁:e₂:e₃ > 0 ∧ ∠ e₁:e₂:e₃ < ∟ + ∟ →
   ∃ (f l k m : Point) (FL KM FK LM : Line), formParallelogram f l k m FL KM FK LM ∧
-  (∠ f:k:m = ∠ e₁:e₂:e₃) ∧ (Triangle.area △ f:k:m + Triangle.area △ f:l:m = Triangle.area △ a:b:d + Triangle.area △ d:b:c) :=
+  (∠ f:k:m = ∠ e₁:e₂:e₃) ∧ (△ f:k:m + △ f:l:m = △ a:b:d + △ d:b:c) :=
 by
   euclid_intros
   euclid_apply (proposition_42 a b d e₁ e₂ e₃ AB DB AD E₁₂ E₂₃) as (f, g, k, h , FG, KH, FK, GH)

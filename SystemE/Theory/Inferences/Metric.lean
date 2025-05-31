@@ -35,8 +35,8 @@ axiom zero_segment_onlyif : ∀ (a b : Point),
 -- ab ≥ 0
 --
 @[euclid, metric]
-axiom segment_gte_zero : ∀ (s : Segment),
-  0 ≤ s.length
+axiom segment_gte_zero : ∀ (a b : Point),
+  0 ≤ length a b
 
 --
 -- 3.
@@ -59,8 +59,9 @@ axiom angle_symm : ∀ (a b c : Point),
 -- --
 -- @[simp]
 @[euclid, metric]
-axiom angle_range : ∀ (ang : Angle),
-  (0 : ℝ) ≤ ang ∧ ang ≤ ∟ + ∟
+axiom angle_range : ∀ (a b c : Point), a ≠ b ∧ b ≠ c → 0 ≤ ∠ a:b:c ∧ ∠ a:b:c ≤ ∟ + ∟
+-- this actually can't be proven because Angle.ofPoints don't require points to be distinct
+-- := fun a b c => angle_range (Angle.ofPoints a b c)
 
 --
 -- 6.
@@ -68,7 +69,7 @@ axiom angle_range : ∀ (ang : Angle),
 --
 -- @[simp]
 @[euclid, metric]
-axiom degenerated_area : ∀ (a b : Point), Triangle.area △ a:a:b = 0
+axiom degenerated_area : ∀ (a b : Point), △ a:a:b = 0
 
 --
 -- 7.
@@ -76,7 +77,7 @@ axiom degenerated_area : ∀ (a b : Point), Triangle.area △ a:a:b = 0
 -- --
 -- @[simp]
 @[euclid, metric]
-axiom area_gte_zero : ∀ (ar : Triangle), 0 ≤ Triangle.area ar
+axiom area_gte_zero : ∀ a b c : Point, 0 ≤ △ a:b:c
 
 --
 -- 8.
@@ -85,12 +86,12 @@ axiom area_gte_zero : ∀ (ar : Triangle), 0 ≤ Triangle.area ar
 -- @[simp]
 @[euclid, metric]
 axiom area_symm_1 : ∀ (a b c : Point),
-    Triangle.area (△a:b:c) = Triangle.area (△c:a:b)
+    △a:b:c = △c:a:b
 
 -- @[simp]
 @[euclid, metric]
 axiom area_symm_2 : ∀ (a b c : Point),
-    Triangle.area (△ a:b:c) = Triangle.area (△a:c:b)
+    △ a:b:c = △a:c:b
 
 --
 -- 9.
@@ -106,4 +107,4 @@ axiom area_congruence : ∀ (a b c a' b' c' : Point),
     ∠ a:b:c = ∠ a':b':c' ∧
     ∠ b:c:a = ∠ b':c':a' ∧
     ∠ c:a:b = ∠ c':a':b'
-    → Triangle.area (△ a:b:c) = Triangle.area (△ a':b':c')
+    → △ a:b:c = △ a':b':c'

@@ -13,7 +13,7 @@ theorem proposition_44 : ∀ (a b c₁ c₂ c₃ d₁ d₂ d₃ : Point) (AB C�
   formTriangle c₁ c₂ c₃ C₁₂ C₂₃ C₃₁ ∧ formRectilinearAngle d₁ d₂ d₃ D₁₂ D₂₃ ∧ distinctPointsOnLine a b AB ∧
   (∠ d₁:d₂:d₃ : ℝ) > 0 ∧ (∠ d₁:d₂:d₃ : ℝ) < ∟ + ∟ →
   ∃ (m l : Point) (BM AL ML : Line), formParallelogram b m a l BM AL AB ML ∧
-  (∠ a:b:m = ∠ d₁:d₂:d₃) ∧ (Triangle.area △ a:b:m + Triangle.area △ a:l:m = Triangle.area △ c₁:c₂:c₃) :=
+  (∠ a:b:m = ∠ d₁:d₂:d₃) ∧ (△ a:b:m + △ a:l:m = △ c₁:c₂:c₃) :=
 by
   euclid_intros
   euclid_apply (proposition_42'' c₁ c₂ c₃ d₁ d₂ d₃ a b C₁₂ C₂₃ C₃₁ D₁₂ D₂₃ AB) as (g, f, e, FG, BG, EF)
@@ -36,7 +36,7 @@ theorem proposition_44' : ∀ (a b c₁ c₂ c₃ d₁ d₂ d₃ x : Point) (AB 
   formTriangle c₁ c₂ c₃ C₁₂ C₂₃ C₃₁ ∧ formRectilinearAngle d₁ d₂ d₃ D₁₂ D₂₃ ∧ distinctPointsOnLine a b AB ∧ ¬(x.onLine AB) ∧
   (∠ d₁:d₂:d₃ : ℝ) > 0 ∧ (∠ d₁:d₂:d₃ : ℝ) < ∟ + ∟ →
   ∃ (m l : Point) (BM AL ML : Line), Point.opposingSides m x AB ∧ formParallelogram b m a l BM AL AB ML ∧
-  (∠ a:b:m : ℝ) = (∠ d₁:d₂:d₃) ∧ (Triangle.area △ a:b:m) + (Triangle.area △ a:l:m) = (Triangle.area △ c₁:c₂:c₃) :=
+  (∠ a:b:m : ℝ) = (∠ d₁:d₂:d₃) ∧ (△ a:b:m) + (△ a:l:m) = (△ c₁:c₂:c₃) :=
 by
   euclid_intros
   euclid_apply (proposition_42''' c₁ c₂ c₃ d₁ d₂ d₃ a b x C₁₂ C₂₃ C₃₁ D₁₂ D₂₃ AB) as (g, f ,e ,FG, BG, EF)

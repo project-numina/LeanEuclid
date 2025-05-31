@@ -14,7 +14,7 @@ by
   euclid_apply (proposition_11'' a c AC) as d'
   euclid_apply (line_from_points a d') as AD
   euclid_apply (extend_point AD d' a) as d''
-  euclid_apply (extend_point_longer AD d'' a (a─b)) as d'''
+  euclid_apply (extend_point_longer AD d'' a a b) as d'''
   euclid_apply (proposition_3 a d''' a b AD AB) as d
   euclid_apply (line_from_points d c) as DC
   euclid_assert (|(d─a)| * |(d─a)| = |(a─b)| * |(a─b)|)

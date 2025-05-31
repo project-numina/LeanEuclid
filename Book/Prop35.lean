@@ -9,7 +9,7 @@ namespace Elements.Book1
 theorem proposition_35 : ∀ (a b c d e f g : Point) (AF BC AB CD EB FC : Line),
   formParallelogram a d b c AF BC AB CD ∧ formParallelogram e f b c AF BC EB FC ∧
   between a d e ∧ between d e f ∧ g.onLine CD ∧ g.onLine EB →
-  Triangle.area △a:b:d + Triangle.area △d:b:c = Triangle.area △e:b:c + Triangle.area △ e:c:f :=
+  △a:b:d + △d:b:c = △e:b:c + △ e:c:f :=
 by
   euclid_intros
   euclid_apply (proposition_34' a d b c AF BC AB CD)
@@ -22,7 +22,7 @@ by
 
 theorem proposition_35' : ∀ (a b c d e f : Point) (AF BC AB CD EB FC : Line),
   formParallelogram a d b c AF BC AB CD ∧ formParallelogram e f b c AF BC EB FC →
-  Triangle.area △a:b:d  + Triangle.area △d:b:c = Triangle.area △e:b:c + Triangle.area △ e:c:f :=
+  △a:b:d  + △d:b:c = △e:b:c + △ e:c:f :=
 by
   euclid_intros
   euclid_apply (proposition_34' a d b c AF BC AB CD)
@@ -46,7 +46,7 @@ by
         euclid_apply (proposition_4 e a b f d c AF AB EB AF CD FC)
         by_cases (f = a)
         · euclid_finish
-        · euclid_assert (Triangle.area △ e:a:b + Triangle.area △ g:b:c = Triangle.area △ f:d:c + Triangle.area △ g:b:c)
+        · euclid_assert (△ e:a:b + △ g:b:c = △ f:d:c + △ g:b:c)
           euclid_finish
 
 end Elements.Book1

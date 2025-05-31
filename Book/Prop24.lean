@@ -7,6 +7,7 @@ import Book.Prop17
 import Book.Prop19
 import Book.Prop23
 
+set_option maxHeartbeats 0
 namespace Elements.Book1
 
 theorem proposition_24 : ∀ (a b c d e f : Point) (AB BC AC DE EF DF : Line),
@@ -17,7 +18,7 @@ by
   euclid_intros
   euclid_apply (proposition_23' d e a b c f DE AB AC) as g'
   euclid_apply (line_from_points d g') as DG
-  euclid_apply (extend_point_longer DG d g' (a─c)) as g''
+  euclid_apply (extend_point_longer DG d g' a c) as g''
   euclid_apply (proposition_3 d g'' a c DG AC) as g
   euclid_apply (line_from_points e g) as EG
   euclid_apply (line_from_points f g) as FG
@@ -43,10 +44,10 @@ by
       euclid_apply (proposition_17 d g e DG EG DE)
       euclid_apply (proposition_17 d f e DF EF DE)
       euclid_assert (∠ d:g:e < ∟ + ∟)
-      euclid_assert (∠ d:f:e < ∟ + ∟)
+      have : (∠ d:f:e < ∟ + ∟) := by esmt
       euclid_assert (∠ e:f:g + ∠ g:f:d + ∠ d:f:e = ∟ + ∟ + ∟ + ∟)
       euclid_assert (∠ e:f:g > ∠ e:g:f)
-      euclid_apply (proposition_19 e f g EF FG EG)
-      euclid_finish
+      have := (proposition_19 e f g EF FG EG) (by esmt)
+      esmt
 
 end Elements.Book1

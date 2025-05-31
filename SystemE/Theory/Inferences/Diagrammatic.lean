@@ -16,7 +16,6 @@ If points `a` and `b` are distinct, and both points are on lines `L` and `M`, th
 axiom two_points_determine_line :
   ∀ (a b : Point) (L M : Line), distinctPointsOnLine a b L ∧ (a.onLine M) ∧ (b.onLine M) → L = M
 
-#euclid_post
 
 /--
 If points `a` and `b` are both centers of `(α : Circle)` then `a = b`
@@ -261,7 +260,7 @@ axiom circle_line_intersections : ∀ (a b c : Point) (L : Line) (α : Circle),
 
 @[euclid, diag]
 axiom circle_points_between : ∀ (a b c : Point) (α : Circle),
-  ¬(a.outsideCircle α) ∧ ¬(b.outsideCircle α) ∧ (between a c b) →
+  (a.insideCircle α ∨ a.onCircle α) ∧ (b.insideCircle α ∨ b.onCircle α) ∧ (between a c b) →
   c.insideCircle α
 
 -- ********
@@ -271,7 +270,7 @@ axiom circle_points_between : ∀ (a b c : Point) (α : Circle),
 -- ********
 @[euclid, diag]
 axiom circle_points_extend : ∀ (a b c : Point) (α : Circle),
-  ¬(a.outsideCircle α) ∧ ¬(c.insideCircle α) ∧ (between a c b) →
+  (a.insideCircle α ∨ a.onCircle α) ∧ ¬(c.insideCircle α) ∧ (between a c b) →
   (b.outsideCircle α)
 
 -- ********
@@ -329,7 +328,7 @@ axiom intersection_symm :
 -- ********
 @[euclid, diag]
 axiom intersection_circle_line_1: ∀ (a b : Point) (α : Circle) (L: Line),
-  ¬(a.outsideCircle α) ∧ ¬(b.outsideCircle α) ∧ (a.opposingSides b L) →
+  (a.onCircle α ∨ a.insideCircle α) ∧ (b.onCircle α ∨ b.insideCircle α) ∧ (a.opposingSides b L) →
   L.intersectsCircle α
 
 -- ********
@@ -346,7 +345,7 @@ axiom intersection_circle_line_2: ∀ (a : Point) (α : Circle) (L: Line),
 
 @[euclid, diag]
 axiom intersection_circle_circle_1: ∀ (a b : Point) (α β : Circle),
-  ¬(a.outsideCircle α) ∧ ¬(b.outsideCircle α) ∧ (a.insideCircle β) ∧ (b.outsideCircle β) →
+  (a.insideCircle α ∨ a.onCircle α) ∧ (b.insideCircle α ∨ b.onCircle α) ∧ (a.insideCircle β) ∧ (b.outsideCircle β) →
    α.intersectsCircle β
 
 -- ********
@@ -362,7 +361,7 @@ axiom intersection_circle_circle_2: ∀ (a b : Point) (α β : Circle),
 -- /--
 -- Not in [Avigad et al., 2009]
 -- -/
-@[euclid, diag]
+@[diag]
 axiom parallelogram_same_side : ∀ (a b c d : Point) (AB CD AC BD : Line),
   formParallelogram a b c d AB CD AC BD →
   b.sameSide d AC ∧ c.sameSide d AB ∧ a.sameSide b CD

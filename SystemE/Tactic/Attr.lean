@@ -94,5 +94,6 @@ initialize euclidExtension : EuclidExtension ← registerEuclidAttr `euclid "euc
 elab "#euclid_post" : command => do
   liftTermElabM do
     let ⟨st, oldExprs, cmds⟩ := euclidExtension.getState (← getEnv)
-    IO.println cmds.reverse.length
+    for cmd in cmds.reverse do
+      IO.println cmd
     IO.println oldExprs.length
